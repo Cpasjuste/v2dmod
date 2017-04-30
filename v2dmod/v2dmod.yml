@@ -1,0 +1,26 @@
+v2dmod:
+  attributes: 0
+  version:
+    major: 1
+    minor: 2
+  main:
+    start: module_start
+    stop: module_stop
+    exit: module_exit
+  modules:
+      v2dmod:
+        functions:
+          - v2d_register
+          - v2d_set_draw_color
+          - v2d_get_draw_color
+          - v2d_scale_rect
+          - v2d_draw_line
+          - v2d_draw_line_color
+          - v2d_draw_line_advanced
+          - v2d_draw_rect
+          - v2d_draw_rect_color
+          - v2d_draw_rect_advanced
+          - v2d_draw_rect_outline
+          - v2d_draw_font
+          - v2d_draw_font_color
+          - v2d_draw_font_advanced
