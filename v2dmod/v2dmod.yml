@@ -11,6 +11,7 @@ v2dmod:
       v2dmod:
         functions:
           - v2d_register
+          - v2d_unregister
           - v2d_set_draw_color
           - v2d_get_draw_color
           - v2d_scale_rect

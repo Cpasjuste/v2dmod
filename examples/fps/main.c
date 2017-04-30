@@ -52,5 +52,7 @@ int module_start(SceSize argc, const void *args) {
 
 int module_stop(SceSize argc, const void *args) {
 
+    v2d_unregister(&module);
+
     return SCE_KERNEL_STOP_SUCCESS;
 }

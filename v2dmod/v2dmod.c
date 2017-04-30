@@ -27,8 +27,6 @@ static tai_hook_ref_t gxmEndScene_ref, gxmShaderPatcherCreate_ref, sceGxmCreateC
 static SceGxmContext *gxmContext = NULL;
 static SceGxmShaderPatcher *gxmShaderPatcher = NULL;
 
-V2DModule *module = NULL;
-
 static int inited = 0;
 
 static void init() {
@@ -85,11 +83,6 @@ int sceGxmEndScene_patched(SceGxmContext *context, const SceGxmNotification *ver
     }
 
     return TAI_CONTINUE(int, gxmEndScene_ref, context, vertexNotification, fragmentNotification);
-}
-
-int v2d_register(V2DModule *m) {
-    module = m;
-    return 0;
 }
 
 void v2d_start(void (*iCb)(), void (*dCb)(), void (*sCb)(const SceDisplayFrameBuf *pParam, int sync)) {

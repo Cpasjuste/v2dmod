@@ -13,6 +13,7 @@ typedef void (*drawCallback) (void);
 typedef void (*setFbCallback) (const SceDisplayFrameBuf *pParam, int sync);
 
 typedef struct V2DModule {
+    int id;
     char path[512];
     initCallback initCb;
     drawCallback drawCb;
@@ -20,5 +21,6 @@ typedef struct V2DModule {
 } V2DModule;
 
 int v2d_register(V2DModule *module);
+int v2d_unregister(V2DModule *m);
 
 #endif //V2DMOD_H

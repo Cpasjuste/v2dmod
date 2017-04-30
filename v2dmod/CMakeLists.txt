@@ -41,6 +41,7 @@ add_executable(v2dmod
         main.c
         v2dmod.c
         v2dmod_drawing.c
+        v2dmod_utility.c
         libvita2d/libvita2d/source/vita2d.c
         libvita2d/libvita2d/source/vita2d_draw.c
         libvita2d/libvita2d/source/vita2d_texture.c
