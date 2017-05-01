@@ -123,61 +123,50 @@ void onDraw() {
     }
 }
 
+uint32_t last_ctrls, press_ctrls;
+
 int onControls(int port, SceCtrlData *ctrl, int count) {
 
     if ((ctrl->buttons & SCE_CTRL_SELECT) && (ctrl->buttons & SCE_CTRL_START)) {
-        draw_menu = !draw_menu;
-        if (draw_menu) {
-            if (fileList != NULL) {
-                if (fileList->files != NULL) {
-                    v2d_free(fileList->files);
-                }
-                v2d_free(fileList);
-            }
-            fileList = v2d_get_file_list("ux0:/tai/");
-        }
-        sceKernelDelayThread(CTRL_DELAY);
+        draw_menu = true;
         return 1;
     }
 
     if (draw_menu) {
 
-        if (ctrl->buttons & SCE_CTRL_DOWN) {
+        press_ctrls = ctrl->buttons & ~last_ctrls;
+
+        if (press_ctrls & SCE_CTRL_DOWN) {
             selection_index++;
             if (selection_index >= fileList->count)
                 selection_index = 0;
-            sceKernelDelayThread(CTRL_DELAY);
-            return 1;
-        } else if (ctrl->buttons & SCE_CTRL_UP) {
+        } else if (press_ctrls & SCE_CTRL_UP) {
             selection_index--;
             if (selection_index < 0)
                 selection_index = fileList->count - 1;
-            sceKernelDelayThread(CTRL_DELAY);
-            return 1;
-        } else if (ctrl->buttons & SCE_CTRL_CROSS) {
+        } else if (press_ctrls & SCE_CTRL_CROSS) {
             V2DModule *module = get_module_by_path(fileList->files[selection_index].path);
             if (module == NULL) {
                 start_module(fileList->files[selection_index].path);
-                sceKernelDelayThread(CTRL_DELAY);
             } else {
                 v2d_unregister(module);
-                sceKernelDelayThread(CTRL_DELAY);
             }
-            return 1;
         } else if (ctrl->buttons & SCE_CTRL_CIRCLE) {
             draw_menu = false;
-            sceKernelDelayThread(CTRL_DELAY);
-            return 1;
         }
+
+        last_ctrls = ctrl->buttons;
+        ctrl->buttons = 0;
     }
 
-    return 0;
+    return 1;
 }
 
 void onInit() {
 
     modules = (V2DModule *) v2d_malloc(MAX_MODULES * sizeof(V2DModule));
     memset(modules, 0, MAX_MODULES * sizeof(V2DModule));
+    fileList = v2d_get_file_list("ux0:/tai/");
 }
 
 void onDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {

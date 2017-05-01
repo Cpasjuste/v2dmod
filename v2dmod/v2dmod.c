@@ -58,15 +58,13 @@ static void init() {
 
 static int controls(tai_hook_ref_t ref_hook, int port, SceCtrlData *ctrl, int count) {
 
+    int ret = TAI_CONTINUE(int, ref_hook, port, ctrl, count);
+
     if (ctrlCb != NULL) {
-        if (ctrlCb(port, ctrl, count) > 0) {
-            TAI_CONTINUE(int, ref_hook, port, ctrl, count);
-            memset(ctrl, 0, sizeof(SceCtrlData));
-            return -1;
-        }
+        ctrlCb(port, ctrl, count);
     }
 
-    return TAI_CONTINUE(int, ref_hook, port, ctrl, count);
+    return ret;
 }
 
 int sceCtrlPeekBufferPositive_hook_func(int port, SceCtrlData *ctrl, int count) {
