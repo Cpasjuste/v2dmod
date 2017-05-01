@@ -36,6 +36,9 @@ typedef struct Color {
 void v2d_set_draw_color(Color color);
 Color v2d_get_draw_color();
 
+void v2d_set_font_scale(float scaling);
+float v2d_get_font_scale();
+
 void v2d_scale_rect(Rect *rect, int pixels);
 
 // line

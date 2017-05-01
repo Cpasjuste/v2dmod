@@ -13,6 +13,7 @@
 
 extern vita2d_pgf *v2d_font;
 static Color draw_color = {255, 255, 255, 255};
+static float font_scaling = 1;
 
 void v2d_set_draw_color(Color color) {
     draw_color = color;
@@ -20,6 +21,14 @@ void v2d_set_draw_color(Color color) {
 
 Color v2d_get_draw_color() {
     return draw_color;
+}
+
+void v2d_set_font_scale(float scaling) {
+    font_scaling = scaling;
+}
+
+float v2d_get_font_scale() {
+    return font_scaling;
 }
 
 void v2d_scale_rect(Rect *rect, int pixels) {
@@ -98,8 +107,8 @@ void v2d_draw_font_advanced(const Rect dst, const Color c,
     vsnprintf(msg, MAX_PATH, fmt, args);
     va_end(args);
 
-    int width = vita2d_pgf_text_width(v2d_font, 1, msg);
-    int height = vita2d_pgf_text_height(v2d_font, 1, msg);
+    int width = vita2d_pgf_text_width(v2d_font, font_scaling, msg);
+    int height = vita2d_pgf_text_height(v2d_font, font_scaling, msg);
 
     // cut message "properly" instead of clip
     while (width > dst.w) {
@@ -113,7 +122,7 @@ void v2d_draw_font_advanced(const Rect dst, const Color c,
     Rect rect = {dst.x, dst.y, dst.w, dst.h};
 
     if (centerY) {
-        rect.y = (dst.y + (dst.h / 2) - height / 2) - 2;
+        rect.y = (dst.y + (dst.h / 2) - height / 2) - (int) ((float) 2 * font_scaling);
     }
 
     if (centerX) {
@@ -121,7 +130,7 @@ void v2d_draw_font_advanced(const Rect dst, const Color c,
     }
 
     vita2d_pgf_draw_text(v2d_font, rect.x, rect.y + height,
-                         (unsigned int) RGBA8(c.r, c.g, c.b, c.a), 1, msg);
+                         (unsigned int) RGBA8(c.r, c.g, c.b, c.a), font_scaling, msg);
 }
 
 void v2d_draw_font_color(const Rect dst, const Color c, const char *fmt, ...) {

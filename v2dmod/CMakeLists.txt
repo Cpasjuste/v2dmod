@@ -64,6 +64,8 @@ target_link_libraries(v2dmod
         ScePgf_stub
         SceSysmodule_stub
         ScePower_stub
+        SceKernelThreadMgr_stub
+        SceKernelModulemgr_stub
         k
         gcc
         m
