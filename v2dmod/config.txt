@@ -1,0 +1,19 @@
+# You must reboot for changes to take place.
+*KERNEL
+# henkaku.skprx is hard-coded to load and is not listed here
+*main
+# main is a special titleid for SceShell
+ux0:app/MLCL00001/henkaku.suprx
+*NPXS10015
+# this is for modifying the version string
+ux0:app/MLCL00001/henkaku.suprx
+
+# pix the cat
+*PCSB00645
+vs0:sys/external/libpgf.suprx
+ux0:tai/v2dmod.suprx
+
+#*ALL
+#vs0:sys/external/libpgf.suprx
+#ux0:tai/v2dmod.suprx
+

@@ -10,10 +10,20 @@
 #include <taihen.h>
 #include "v2dmod_drawing.h"
 
-typedef void (*initCallback) (void);
-typedef void (*drawCallback) (void);
-typedef void (*setFbCallback) (const SceDisplayFrameBuf *pParam, int sync);
-typedef int (*ctrlCallback) (int port, SceCtrlData *ctrl, int count);
+typedef void (*initCallback)(void);
+
+typedef void (*drawCallback)(void);
+
+typedef void (*setFbCallback)(const SceDisplayFrameBuf *pParam, int sync);
+
+typedef int (*ctrlCallback)(int port, SceCtrlData *ctrl, int count);
+
+typedef struct Hook {
+    SceUID uid;
+    tai_hook_ref_t ref;
+    uint32_t nid;
+    const void *func;
+} Hook;
 
 typedef struct V2DModule {
     char name[27];
@@ -25,7 +35,9 @@ typedef struct V2DModule {
 } V2DModule;
 
 int v2d_register(V2DModule *module);
+
 int v2d_unregister(V2DModule *m);
+
 int v2d_get_module_info(tai_module_info_t *modinfo);
 
 #endif //V2DMOD_H

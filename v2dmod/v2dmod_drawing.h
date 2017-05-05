@@ -5,9 +5,8 @@
 #ifndef V2DMOD_DRAWING_H
 #define V2DMOD_DRAWING_H
 
-#define bool int
-#define false 0
-#define true 1
+
+#include <libk/stdbool.h>
 
 typedef struct Point {
     int x;

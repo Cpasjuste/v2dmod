@@ -10,6 +10,7 @@
 #include "v2dmod.h"
 #include "utils.h"
 #include "v2dmod_utility.h"
+#include "v2dmod_log.h"
 
 char debug_msg[512];
 

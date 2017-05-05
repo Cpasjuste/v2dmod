@@ -42,6 +42,7 @@ add_executable(v2dmod
         v2dmod.c
         v2dmod_drawing.c
         v2dmod_utility.c
+        v2dmod_log.c
         libvita2d/libvita2d/source/vita2d.c
         libvita2d/libvita2d/source/vita2d_draw.c
         libvita2d/libvita2d/source/vita2d_texture.c
@@ -66,6 +67,7 @@ target_link_libraries(v2dmod
         ScePower_stub
         SceKernelThreadMgr_stub
         SceKernelModulemgr_stub
+        SceAppMgr_stub
         k
         gcc
         m
