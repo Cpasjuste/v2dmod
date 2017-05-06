@@ -7,9 +7,9 @@
 
 V2DModule module;
 
-static Color BLACK = {0, 0, 0, 200};
-static Color RED = {255, 0, 0, 200};
-static Color GREEN = {0, 255, 0, 200};
+static Color COLOR_FONT = {255, 255, 255, 200};
+static Color COLOR_MENU = {102, 178, 255, 200};
+static Color COLOR_MENU_BORDER = {255, 255, 255, 200};
 
 uint64_t tick = 0;
 int frames = 0;
@@ -34,8 +34,8 @@ void onDraw() {
 
     const Rect rectFps = {4, 4, 84, 34};
 
-    v2d_draw_rect_outline(rectFps, GREEN, RED, 2);
-    v2d_draw_font_advanced(rectFps, BLACK, true, true, "FPS: %d", fps);
+    v2d_draw_rect_outline(rectFps, COLOR_MENU, COLOR_MENU_BORDER, 2);
+    v2d_draw_font_advanced(rectFps, COLOR_FONT, true, true, "FPS: %d", fps);
 }
 
 void _start() __attribute__ ((weak, alias ("module_start")));
