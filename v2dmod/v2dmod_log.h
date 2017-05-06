@@ -7,7 +7,7 @@
 
 #include <libk/stdio.h>
 
-#define LOG_PATH "ux0:tai/"
+#define LOG_PATH "ux0:data/v2dmod/"
 #define LOG_FILE LOG_PATH "v2dmod.log"
 
 void log_write(const char *buffer);

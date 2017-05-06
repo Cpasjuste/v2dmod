@@ -12,18 +12,6 @@
 #include "v2dmod.h"
 #include "v2dmod_log.h"
 
-#define HOOK_DISPLAY                    0
-#define HOOK_GXM_BEGIN_SCENE            1
-#define HOOK_GXM_END_SCENE              2
-#define HOOK_GXM_SHADER_PATCHER_CREATE  3
-#define HOOK_GXM_CREATE_CONTEXT         4
-#define HOOK_GXM_CREATE_RENDER_TARGET   5
-#define HOOK_GXM_COLOR_SURFACE_INIT     6
-#define HOOK_CTRL_PEEK_1                7
-#define HOOK_CTRL_PEEK_2                8
-#define HOOK_CTRL_READ_1                9
-#define HOOK_CTRL_READ_2                10
-
 int _sceCtrlPeekBufferPositive(int port, SceCtrlData *ctrl, int count);
 
 int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *ctrl, int count);
@@ -56,7 +44,23 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
 int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNotification,
                     const SceGxmNotification *fragmentNotification);
 
-#define HOOK_COUNT 11
+int _sceGxmDestroyRenderTarget(SceGxmRenderTarget *renderTarget);
+
+#define HOOK_DISPLAY                    0
+#define HOOK_GXM_BEGIN_SCENE            1
+#define HOOK_GXM_END_SCENE              2
+#define HOOK_GXM_SHADER_PATCHER_CREATE  3
+#define HOOK_GXM_CREATE_CONTEXT         4
+#define HOOK_GXM_CREATE_RENDER_TARGET   5
+#define HOOK_GXM_DESTROY_RENDER_TARGET  6
+#define HOOK_GXM_COLOR_SURFACE_INIT     7
+#define HOOK_CTRL_PEEK_1                8
+#define HOOK_CTRL_PEEK_2                9
+#define HOOK_CTRL_READ_1                10
+#define HOOK_CTRL_READ_2                11
+
+#define HOOK_COUNT 12
+
 static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0x7A410B64, _sceDisplaySetFrameBuf},
         {-1, 0, 0x8734FF4E, _sceGxmBeginScene},
@@ -64,6 +68,7 @@ static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0x5032658,  _sceGxmShaderPatcherCreate},
         {-1, 0, 0xE84CE5B4, _sceGxmCreateContext},
         {-1, 0, 0x207AF96B, _sceGxmCreateRenderTarget},
+        {-1, 0, 0xB94C50A,  _sceGxmDestroyRenderTarget},
         {-1, 0, 0xED0F6E25, _sceGxmColorSurfaceInit},
         {-1, 0, 0xA9C3CED6, _sceCtrlPeekBufferPositive},
         {-1, 0, 0x15F81E8C, _sceCtrlPeekBufferPositive2},
@@ -79,12 +84,13 @@ static ctrlCallback ctrlCb = NULL;
 static SceGxmContext *gxmContext = NULL;
 static SceGxmShaderPatcher *gxmShaderPatcher = NULL;
 static SceGxmRenderTarget *gxmRenderTarget = NULL;
-static SceGxmColorSurface *gxmColorSurface = NULL;
-static int gxmScenesPerFrame = 0;
-static int gxmSceneCurrent = 0;
+//static SceGxmColorSurface *gxmColorSurface = NULL;
+//static int gxmScenesPerFrame = 0;
+//static int gxmSceneCurrent = 0;
 
 static bool inited = false;
 static bool can_draw = true;
+static int scenes_count = 0;
 
 vita2d_pgf *v2d_font = NULL;
 
@@ -96,7 +102,7 @@ static void init() {
 
     if (gxmContext != NULL && gxmShaderPatcher != NULL) {
         inited = 1;
-        vita2d_init_advanced(128 * 1024, gxmContext, gxmShaderPatcher);
+        vita2d_init_advanced(256 * 1024, gxmContext, gxmShaderPatcher);
         vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
         v2d_font = vita2d_load_custom_pgf("ux0:/data/default-20.pgf");
 
@@ -137,7 +143,11 @@ int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
         setFbCb(pParam, sync);
     }
 
-    return TAI_CONTINUE(int, hooks[HOOK_DISPLAY].ref, pParam, sync);
+    int ret = TAI_CONTINUE(int, hooks[HOOK_DISPLAY].ref, pParam, sync);
+
+    vita2d_pool_reset();
+
+    return ret;
 }
 
 int _sceGxmCreateContext(const SceGxmContextParams *params, SceGxmContext **context) {
@@ -145,7 +155,7 @@ int _sceGxmCreateContext(const SceGxmContextParams *params, SceGxmContext **cont
     int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_CREATE_CONTEXT].ref, params, context);
     gxmContext = *context;
 
-    V2D_LOG("sceGxmCreateContext: context = 0x%p\n", *context);
+    V2D_LOG("sceGxmCreateContext: %p\n", *context);
     init();
 
     return ret;
@@ -156,7 +166,7 @@ int _sceGxmShaderPatcherCreate(const SceGxmShaderPatcherParams *params, SceGxmSh
     int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_SHADER_PATCHER_CREATE].ref, params, shaderPatcher);
     gxmShaderPatcher = *shaderPatcher;
 
-    V2D_LOG("sceGxmShaderPatcherCreate\n");
+    V2D_LOG("sceGxmShaderPatcherCreate: %p\n", *shaderPatcher);
     init();
 
     return ret;
@@ -166,12 +176,26 @@ int _sceGxmCreateRenderTarget(const SceGxmRenderTargetParams *params, SceGxmRend
 
     int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_CREATE_RENDER_TARGET].ref, params, renderTarget);
 
-    V2D_LOG("sceGxmCreateRenderTarget: %ix%i (scenes=%i)\n", params->width, params->height, params->scenesPerFrame);
+    V2D_LOG("sceGxmCreateRenderTarget: %p - %ix%i (scenes=%i)\n",
+            *renderTarget, params->width, params->height, params->scenesPerFrame);
 
-    //if (params->width == 960 && params->height == 544) {
-    gxmRenderTarget = *renderTarget;
-    gxmScenesPerFrame = params->scenesPerFrame;
-    //}
+    if (gxmRenderTarget == NULL && params->width == 960 && params->height == 544) {
+        gxmRenderTarget = *renderTarget;
+    }
+
+    return ret;
+}
+
+int _sceGxmDestroyRenderTarget(SceGxmRenderTarget *renderTarget) {
+
+    V2D_LOG("sceGxmDestroyRenderTarget: %p\n", renderTarget);
+
+    if (renderTarget == gxmRenderTarget) {
+        // TODO: deinit/reinit vita2d ?
+    }
+
+    int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_DESTROY_RENDER_TARGET].ref, renderTarget);
+
 
     return ret;
 }
@@ -201,26 +225,20 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
     int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_BEGIN_SCENE].ref, context, flags, renderTarget,
                            validRegion, vertexSyncObject, fragmentSyncObject, colorSurface, depthStencil);
 
-    gxmSceneCurrent++;
-
-    can_draw = true;//(gxmColorSurface == colorSurface);
-    //can_draw = (gxmRenderTarget == renderTarget)
-    //           && (gxmContext == context);
-
-    if (validRegion != NULL) {
-        V2D_LOG("sceGxmBeginScene: validRegion: %ix%i\n", validRegion->xMin, validRegion->xMax);
-    }
+    can_draw = sceGxmTextureGetWidth(&colorSurface->backgroundTex) == 960;
+    //(gxmRenderTarget == renderTarget);
+    //V2D_LOG("_sceGxmBeginScene: (target=%p, can_draw=%i\n", renderTarget, can_draw);
 
     return ret;
 }
 
 int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNotification,
                     const SceGxmNotification *fragmentNotification) {
-    if (inited && gxmSceneCurrent == gxmScenesPerFrame) {
-        gxmSceneCurrent = 0;
-        vita2d_pool_reset();
+
+    //V2D_LOG("_sceGxmEndScene: can_draw=%i\n", can_draw);
+
+    if (inited && can_draw) {
         drawCb();
-        //can_draw = false;
     }
 
     return TAI_CONTINUE(int, hooks[HOOK_GXM_END_SCENE].ref, context, vertexNotification, fragmentNotification);
@@ -233,8 +251,8 @@ void v2d_start(void (*iCb)(),
 
     // Getting title info
     char id[16], title[256];
-    sceAppMgrAppParamGetString(0, 9, title , 256);
-    sceAppMgrAppParamGetString(0, 12, id , 256);
+    sceAppMgrAppParamGetString(0, 9, title, 256);
+    sceAppMgrAppParamGetString(0, 12, id, 256);
     V2D_LOG("====================\n");
     V2D_LOG(" %s: %s\n", id, title);
     V2D_LOG("====================\n");

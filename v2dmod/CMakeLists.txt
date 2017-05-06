@@ -68,6 +68,7 @@ target_link_libraries(v2dmod
         SceKernelThreadMgr_stub
         SceKernelModulemgr_stub
         SceAppMgr_stub
+        kuio_stub
         k
         gcc
         m

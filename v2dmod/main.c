@@ -24,11 +24,11 @@ char debug_msg[512];
 static Color BLACK = {0, 0, 0, 255};
 static Color WHITE = {255, 255, 255, 255};
 
-static Color COLOR_FONT = {255, 255, 255, 255};
-static Color COLOR_MENU = {102, 178, 255, 255};
-static Color COLOR_MENU_BORDER = {255, 255, 255, 255};
-static Color COLOR_SELECTION = {51, 153, 255, 255};
-static Color COLOR_SELECTION_BORDER = {102, 255, 102, 255};
+static Color COLOR_FONT = {255, 255, 255, 200};
+static Color COLOR_MENU = {102, 178, 255, 200};
+static Color COLOR_MENU_BORDER = {255, 255, 255, 200};
+static Color COLOR_SELECTION = {51, 153, 255, 200};
+static Color COLOR_SELECTION_BORDER = {102, 255, 102, 200};
 
 void v2d_start(void (*iCb)(), void (*dCb)(),
                void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
@@ -98,6 +98,9 @@ void menu_load_module() {
 void onDraw() {
 
     v2d_set_draw_color(WHITE);
+
+
+    //v2d_draw_font(100, 0, "modules: %i", get_modules_count());
 
     /*
     v2d_draw_font(100, 0, "modules: %i", get_modules_count());
