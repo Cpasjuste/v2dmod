@@ -11,6 +11,7 @@
 #include "vita2d.h"
 #include "v2dmod.h"
 #include "v2dmod_log.h"
+#include "v2dmod_fb.h"
 
 int _sceCtrlPeekBufferPositive(int port, SceCtrlData *ctrl, int count);
 
@@ -88,9 +89,12 @@ static SceGxmRenderTarget *gxmRenderTarget = NULL;
 //static int gxmScenesPerFrame = 0;
 //static int gxmSceneCurrent = 0;
 
+bool v2d_gpu = true;
+
 static bool inited = false;
 static bool can_draw = true;
-static int scenes_count = 0;
+static bool new_loop = false;
+//static int scenes_count = 0;
 
 vita2d_pgf *v2d_font = NULL;
 
@@ -100,12 +104,17 @@ static void init() {
         return;
     }
 
-    if (gxmContext != NULL && gxmShaderPatcher != NULL) {
+    if (v2d_gpu) {
+        if (gxmContext != NULL && gxmShaderPatcher != NULL) {
+            inited = 1;
+            vita2d_init_advanced(128 * 1024, gxmContext, gxmShaderPatcher);
+            vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW);
+            v2d_font = vita2d_load_custom_pgf("sa0:/data/font/pgf/ltn0.pgf");
+            //v2d_font = vita2d_load_custom_pgf("ux0:/data/default-20.pgf");
+            initCb();
+        }
+    } else {
         inited = 1;
-        vita2d_init_advanced(256 * 1024, gxmContext, gxmShaderPatcher);
-        vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
-        v2d_font = vita2d_load_custom_pgf("ux0:/data/default-20.pgf");
-
         initCb();
     }
 }
@@ -114,8 +123,11 @@ static int _sceCtrlHooks(tai_hook_ref_t ref_hook, int port, SceCtrlData *ctrl, i
 
     int ret = TAI_CONTINUE(int, ref_hook, port, ctrl, count);
 
-    if (ctrlCb != NULL) {
-        ctrlCb(port, ctrl, count);
+    if (ctrlCb != NULL && new_loop) {
+        if (ctrlCb(port, ctrl, count)) {
+            ctrl->buttons = 0;
+        }
+        new_loop = false;
     }
 
     return ret;
@@ -143,11 +155,16 @@ int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
         setFbCb(pParam, sync);
     }
 
-    int ret = TAI_CONTINUE(int, hooks[HOOK_DISPLAY].ref, pParam, sync);
+    if (v2d_gpu) {
+        vita2d_pool_reset();
+    } else {
+        blit_set_frame_buf(pParam);
+        drawCb();
+    }
 
-    vita2d_pool_reset();
+    new_loop = true;
 
-    return ret;
+    return TAI_CONTINUE(int, hooks[HOOK_DISPLAY].ref, pParam, sync);
 }
 
 int _sceGxmCreateContext(const SceGxmContextParams *params, SceGxmContext **context) {
@@ -237,7 +254,7 @@ int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNoti
 
     //V2D_LOG("_sceGxmEndScene: can_draw=%i\n", can_draw);
 
-    if (inited && can_draw) {
+    if (inited && v2d_gpu && can_draw) {
         drawCb();
     }
 
@@ -269,6 +286,10 @@ void v2d_start(void (*iCb)(),
                                              hooks[i].nid,
                                              hooks[i].func);
     }
+
+    if (!v2d_gpu) {
+        init();
+    }
 }
 
 void v2d_end() {
@@ -279,9 +300,11 @@ void v2d_end() {
         }
     }
 
-    vita2d_fini();
+    if (v2d_gpu) {
+        vita2d_fini();
 
-    if (v2d_font != NULL) {
-        vita2d_free_pgf(v2d_font);
+        if (v2d_font != NULL) {
+            vita2d_free_pgf(v2d_font);
+        }
     }
 }

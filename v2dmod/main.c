@@ -11,8 +11,7 @@
 #include "utils.h"
 #include "v2dmod_utility.h"
 #include "v2dmod_log.h"
-
-char debug_msg[512];
+#include "v2dmod_fb.h"
 
 #define SCREEN_WIDTH 960
 #define SCREEN_HEIGHT 544
@@ -21,7 +20,7 @@ char debug_msg[512];
 #define start_module(x) sceKernelLoadStartModule(x, 0, NULL, 0, NULL, 0)
 #define stop_module(x) sceKernelStopUnloadModule(x, 0, NULL, 0, NULL, NULL)
 
-static Color BLACK = {0, 0, 0, 255};
+//static Color BLACK = {0, 0, 0, 255};
 static Color WHITE = {255, 255, 255, 255};
 
 static Color COLOR_FONT = {255, 255, 255, 200};
@@ -40,9 +39,10 @@ int v2d_register(V2DModule *m);
 
 int v2d_unregister(V2DModule *m);
 
+/*
 static bool is_module_loaded(V2DModule *m);
-
 static int get_modules_count();
+*/
 
 static V2DModule *get_module_by_path(const char *path);
 
@@ -99,20 +99,6 @@ void onDraw() {
 
     v2d_set_draw_color(WHITE);
 
-
-    //v2d_draw_font(100, 0, "modules: %i", get_modules_count());
-
-    /*
-    v2d_draw_font(100, 0, "modules: %i", get_modules_count());
-    for (int i = 0; i < MAX_MODULES; i++) {
-        if (modules[i].modinfo.modid > 0) {
-            v2d_draw_font(100, (i + 1) * 20, "module: %s (0x%08X) %s",
-                          modules[i].modinfo.name, modules[i].modinfo.modid, modules[i].path);
-        }
-    }
-    v2d_draw_font(400, 520, "%s", debug_msg);
-    */
-
     if (draw_menu) {
         menu_load_module();
     } else {
@@ -160,10 +146,10 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
         }
 
         last_ctrls = ctrl->buttons;
-        ctrl->buttons = 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 void onInit() {
@@ -240,6 +226,7 @@ static int v2d_get_module_info_by_name(const char *name, tai_module_info_t *modi
     return -1;
 }
 
+/*
 static bool is_module_loaded(V2DModule *m) {
 
     tai_module_info_t info;
@@ -259,6 +246,7 @@ static int get_modules_count() {
 
     return count;
 }
+*/
 
 void _start() __attribute__ ((weak, alias ("module_start")));
 

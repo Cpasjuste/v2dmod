@@ -40,6 +40,8 @@ file(GLOB SRC
 add_executable(v2dmod
         main.c
         v2dmod.c
+        v2dmod_fb.c
+        v2dmod_fb_font.c
         v2dmod_drawing.c
         v2dmod_utility.c
         v2dmod_log.c

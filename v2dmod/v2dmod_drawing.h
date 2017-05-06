@@ -52,6 +52,8 @@ void v2d_draw_rect_advanced(int x, int y, int w, int h, int r, int g, int b, int
 void v2d_draw_rect_outline(const Rect rect, Color color, Color outline, int outlineSize);
 
 // font
+int v2d_get_font_width(const char *msg);
+int v2d_get_font_height(const char *msg);
 void v2d_draw_font(int x, int y, const char *fmt, ...);
 void v2d_draw_font_color(const Rect dst, const Color c, const char *fmt, ...);
 void v2d_draw_font_advanced(const Rect dst, const Color c,

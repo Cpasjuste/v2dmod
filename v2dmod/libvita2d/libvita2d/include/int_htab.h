@@ -1,7 +1,7 @@
 #ifndef INT_HTAB_H
 #define INT_HTAB_H
 
-#include <stddef.h>
+//#include <libk/stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

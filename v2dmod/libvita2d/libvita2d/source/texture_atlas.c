@@ -1,5 +1,5 @@
-#include <stdlib.h>
-#include <string.h>
+#include <libk/stdlib.h>
+#include <libk/string.h>
 #include "utils.h"
 #include "texture_atlas.h"
 
@@ -24,7 +24,7 @@ texture_atlas *texture_atlas_create(int width, int height, SceGxmTextureFormat f
 	}
 
 	atlas->bp_root = bp2d_create(&rect);
-	atlas->htab = int_htab_create(256);
+	atlas->htab = int_htab_create(128);
 
 	vita2d_texture_set_filters(atlas->texture,
 				   SCE_GXM_TEXTURE_FILTER_POINT,

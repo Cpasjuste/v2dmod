@@ -14,6 +14,7 @@
 int utf8_to_ucs2(const char *utf8, unsigned int *character);
 
 void* sce_malloc(size_t size);
+void *sce_malloc_cdram(size_t size);
 void sce_free(void* addr);
 
 /* GPU utils */

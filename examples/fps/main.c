@@ -2,6 +2,7 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/display.h>
 #include <libk/string.h>
+#include <libk/stdio.h>
 
 #include "v2dmod.h"
 
@@ -32,7 +33,9 @@ void onDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
 
 void onDraw() {
 
-    const Rect rectFps = {4, 4, 84, 34};
+    Rect rectFps = {4, 4, 84, 34};
+    int width = v2d_get_font_width("FPS: 159") + 8;
+    rectFps.w = width;
 
     v2d_draw_rect_outline(rectFps, COLOR_MENU, COLOR_MENU_BORDER, 2);
     v2d_draw_font_advanced(rectFps, COLOR_FONT, true, true, "FPS: %d", fps);

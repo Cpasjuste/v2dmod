@@ -1,24 +1,25 @@
 #include <psp2/pgf.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/threadmgr.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <malloc.h>
 #include <math.h>
+#include <libk/stdlib.h>
+#include <libk/string.h>
+#include <libk/stdarg.h>
+#include <libk/stdio.h>
 #include "vita2d.h"
 #include "texture_atlas.h"
 #include "bin_packing_2d.h"
 #include "utils.h"
 #include "shared.h"
 
-#define ATLAS_DEFAULT_W 512
-#define ATLAS_DEFAULT_H 512
+#define ATLAS_DEFAULT_W 256
+#define ATLAS_DEFAULT_H 256
 
 typedef struct vita2d_pgf_font_handle {
     SceFontHandle font_handle;
+
     int (*in_font_group)(unsigned int c);
+
     struct vita2d_pgf_font_handle *next;
 } vita2d_pgf_font_handle;
 
@@ -30,25 +31,21 @@ typedef struct vita2d_pgf {
     float vsize;
 } vita2d_pgf;
 
-static void *pgf_alloc_func(void *userdata, unsigned int size)
-{
+static void *pgf_alloc_func(void *userdata, unsigned int size) {
+
     size_t align = sizeof(int);
     void *p = sce_malloc(size + align + 1);
-    size_t d = (unsigned long)p % align;
+    size_t d = (unsigned long) p % align;
 
     if (d != 0)
-        p = (char *)p + align - d;
+        p = (char *) p + align - d;
 
     return p;
-    //return sce_malloc(size);
-    //return memalign(sizeof(int), (size + sizeof(int) - 1) / sizeof(int) * sizeof(int) );
 }
 
-static void pgf_free_func(void *userdata, void *p)
-{
-    if(p != NULL) {
+static void pgf_free_func(void *userdata, void *p) {
+    if (p != NULL) {
         sce_free(p);
-        //free(p);
     }
 }
 
@@ -65,8 +62,7 @@ static void vita2d_load_pgf_post(vita2d_pgf *font) {
     sceKernelCreateLwMutex(&font->mutex, "vita2d_pgf_mutex", 2, 0, NULL);
 }
 
-static vita2d_pgf *vita2d_load_pgf_pre(int numFonts)
-{
+static vita2d_pgf *vita2d_load_pgf_pre(int numFonts) {
     unsigned int error;
     vita2d_pgf *font = sce_malloc(sizeof(*font));
     if (!font)
@@ -95,8 +91,7 @@ static vita2d_pgf *vita2d_load_pgf_pre(int numFonts)
     return font;
 }
 
-vita2d_pgf *vita2d_load_system_pgf(int numFonts, const vita2d_system_pgf_config *configs)
-{
+vita2d_pgf *vita2d_load_system_pgf(int numFonts, const vita2d_system_pgf_config *configs) {
     if (numFonts < 1) {
         return NULL;
     }
@@ -157,8 +152,7 @@ vita2d_pgf *vita2d_load_system_pgf(int numFonts, const vita2d_system_pgf_config 
     return NULL;
 }
 
-vita2d_pgf *vita2d_load_default_pgf()
-{
+vita2d_pgf *vita2d_load_default_pgf() {
     vita2d_system_pgf_config configs[] = {
             {SCE_FONT_LANGUAGE_DEFAULT, NULL},
     };
@@ -166,8 +160,7 @@ vita2d_pgf *vita2d_load_default_pgf()
     return vita2d_load_system_pgf(1, configs);
 }
 
-vita2d_pgf *vita2d_load_custom_pgf(const char *path)
-{
+vita2d_pgf *vita2d_load_custom_pgf(const char *path) {
     unsigned int error;
     vita2d_pgf *font = vita2d_load_pgf_pre(1);
 
@@ -180,7 +173,7 @@ vita2d_pgf *vita2d_load_custom_pgf(const char *path)
         return NULL;
     }
 
-    SceFontHandle font_handle = sceFontOpenUserFile(font->lib_handle, (char *)path, 1, &error);
+    SceFontHandle font_handle = sceFontOpenUserFile(font->lib_handle, (char *) path, 1, &error);
     if (error != 0) {
         sceFontDoneLib(font->lib_handle);
         sce_free(handle);
@@ -196,8 +189,7 @@ vita2d_pgf *vita2d_load_custom_pgf(const char *path)
     return font;
 }
 
-void vita2d_free_pgf(vita2d_pgf *font)
-{
+void vita2d_free_pgf(vita2d_pgf *font) {
     if (font) {
         sceKernelDeleteLwMutex(&font->mutex);
 
@@ -214,8 +206,7 @@ void vita2d_free_pgf(vita2d_pgf *font)
     }
 }
 
-static int atlas_add_glyph(vita2d_pgf *font, unsigned int character)
-{
+static int atlas_add_glyph(vita2d_pgf *font, unsigned int character) {
     SceFontHandle font_handle = font->font_handle_list->font_handle;
     SceFontCharInfo char_info;
     bp2d_position position;
@@ -261,15 +252,18 @@ static int atlas_add_glyph(vita2d_pgf *font, unsigned int character)
     glyph_image.bufHeight = vita2d_texture_get_height(tex);
     glyph_image.bytesPerLine = vita2d_texture_get_stride(tex);
     glyph_image.pad = 0;
-    glyph_image.bufferPtr = (unsigned int)texture_data;
+    glyph_image.bufferPtr = (unsigned int) texture_data;
 
     return sceFontGetCharGlyphImage(font_handle, character, &glyph_image) == 0;
 }
 
 int generic_pgf_draw_text(vita2d_pgf *font, int draw, int *height,
                           int x, int y, unsigned int color, float scale,
-                          const char *text)
-{
+                          const char *text) {
+    if (font == NULL) {
+        return 0;
+    }
+
     sceKernelLockLwMutex(&font->mutex, 1, NULL);
 
     int i;
@@ -329,15 +323,13 @@ int generic_pgf_draw_text(vita2d_pgf *font, int draw, int *height,
 
 int vita2d_pgf_draw_text(vita2d_pgf *font, int x, int y,
                          unsigned int color, float scale,
-                         const char *text)
-{
+                         const char *text) {
     return generic_pgf_draw_text(font, 1, NULL, x, y, color, scale, text);
 }
 
 int vita2d_pgf_draw_textf(vita2d_pgf *font, int x, int y,
                           unsigned int color, float scale,
-                          const char *text, ...)
-{
+                          const char *text, ...) {
     char buf[1024];
     va_list argptr;
     va_start(argptr, text);
@@ -347,8 +339,7 @@ int vita2d_pgf_draw_textf(vita2d_pgf *font, int x, int y,
 }
 
 void vita2d_pgf_text_dimensions(vita2d_pgf *font, float scale,
-                                const char *text, int *width, int *height)
-{
+                                const char *text, int *width, int *height) {
     int w;
     w = generic_pgf_draw_text(font, 0, height, 0, 0, 0, scale, text);
 
@@ -356,15 +347,13 @@ void vita2d_pgf_text_dimensions(vita2d_pgf *font, float scale,
         *width = w;
 }
 
-int vita2d_pgf_text_width(vita2d_pgf *font, float scale, const char *text)
-{
+int vita2d_pgf_text_width(vita2d_pgf *font, float scale, const char *text) {
     int width;
     vita2d_pgf_text_dimensions(font, scale, text, &width, NULL);
     return width;
 }
 
-int vita2d_pgf_text_height(vita2d_pgf *font, float scale, const char *text)
-{
+int vita2d_pgf_text_height(vita2d_pgf *font, float scale, const char *text) {
     int height;
     vita2d_pgf_text_dimensions(font, scale, text, NULL, &height);
     return height;

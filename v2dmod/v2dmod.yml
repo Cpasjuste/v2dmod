@@ -22,6 +22,8 @@ v2dmod:
           - v2d_draw_rect_color
           - v2d_draw_rect_advanced
           - v2d_draw_rect_outline
+          - v2d_get_font_width
+          - v2d_get_font_height
           - v2d_draw_font
           - v2d_draw_font_color
           - v2d_draw_font_advanced

@@ -34,6 +34,8 @@ typedef struct V2DModule {
     setFbCallback setFbCb;
 } V2DModule;
 
+extern bool v2d_gpu;
+
 int v2d_register(V2DModule *module);
 
 int v2d_unregister(V2DModule *m);
