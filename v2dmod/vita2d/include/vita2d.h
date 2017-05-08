@@ -52,9 +52,10 @@ typedef struct vita2d_system_pvf_config {
 typedef struct vita2d_font vita2d_font;
 typedef struct vita2d_pgf vita2d_pgf;
 typedef struct vita2d_pvf vita2d_pvf;
+typedef struct vita2d_bmf vita2d_bmf;
 
-int vita2d_init(SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher);
-int vita2d_init_advanced(unsigned int temp_pool_size, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher);
+int vita2d_init(SceKernelMemBlockType memType, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher);
+int vita2d_init_advanced(SceKernelMemBlockType memType, unsigned int temp_pool_size, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher);
 int vita2d_fini();
 
 void vita2d_clear_screen();
@@ -154,6 +155,14 @@ int vita2d_pvf_draw_textf(vita2d_pvf *font, int x, int y, unsigned int color, fl
 void vita2d_pvf_text_dimensions(vita2d_pvf *font, float scale, const char *text, int *width, int *height);
 int vita2d_pvf_text_width(vita2d_pvf *font, float scale, const char *text);
 int vita2d_pvf_text_height(vita2d_pvf *font, float scale, const char *text);
+
+vita2d_bmf *vita2d_load_bmf(const char *img_path, const char *fnt_paht);
+void vita2d_free_bmf(vita2d_bmf *font);
+int vita2d_bmf_draw_text(vita2d_bmf *font, int x, int y, unsigned int color, float scale, const char *text);
+int vita2d_bmf_draw_textf(vita2d_bmf *font, int x, int y, unsigned int color, float scale, const char *text, ...);
+void vita2d_bmf_text_dimensions(vita2d_bmf *font, float scale, const char *text, int *width, int *height);
+int vita2d_bmf_text_width(vita2d_bmf *font, float scale, const char *text);
+int vita2d_bmf_text_height(vita2d_bmf *font, float scale, const char *text);
 
 #ifdef __cplusplus
 }

@@ -6,14 +6,12 @@
 #include <libk/stdio.h>
 #include <libk/stdarg.h>
 
-#include "v2dmod_drawing.h"
 #include "vita2d.h"
-#include "v2dmod.h"
-#include "v2dmod_fb.h"
+#include "v2dmod_drawing.h"
 
 #define MAX_PATH 512
 
-extern vita2d_pgf *v2d_font;
+extern vita2d_bmf *v2d_font;
 static Color draw_color = {255, 255, 255, 255};
 static float font_scaling = 1;
 
@@ -42,11 +40,7 @@ void v2d_scale_rect(Rect *rect, int pixels) {
 
 void v2d_draw_line_advanced(int x1, int y1, int x2, int y2, int r, int g, int b, int a) {
     if (a > 0) {
-        if (v2d_gpu) {
-            vita2d_draw_line(x1, y1, x2, y2, (unsigned int) RGBA8(r, g, b, a));
-        } else {
-            // TODO
-        }
+        vita2d_draw_line(x1, y1, x2, y2, (unsigned int) RGBA8(r, g, b, a));
     }
 }
 
@@ -63,11 +57,7 @@ void v2d_draw_line(const Line line) {
 void v2d_draw_rect_advanced(int _x, int _y, int _w, int _h, int r, int g, int b, int a, bool fill) {
     if (fill) {
         if (a > 0) {
-            if (v2d_gpu) {
-                vita2d_draw_rectangle(_x, _y, _w, _h, (unsigned int) RGBA8(r, g, b, a));
-            } else {
-                blit_rect(_x, _y, _w, _h, RGBT(r, g, b, 255 - a));
-            }
+            vita2d_draw_rectangle(_x, _y, _w, _h, (unsigned int) RGBA8(r, g, b, a));
         }
     } else {
         if (a > 0) {
@@ -104,31 +94,23 @@ void v2d_draw_rect_outline(const Rect rect, Color color, Color outline, int outl
 
 // fonts
 int v2d_get_font_width(const char *msg) {
-    if (v2d_gpu) {
-        if (v2d_font == NULL) {
-            return 0;
-        }
-        return vita2d_pgf_text_width(v2d_font, font_scaling, msg);
-    } else {
-        return strlen(msg) * 16;
+    if (v2d_font == NULL) {
+        return 0;
     }
+    return vita2d_bmf_text_width(v2d_font, font_scaling, msg);
 }
 
 int v2d_get_font_height(const char *msg) {
-    if (v2d_gpu) {
-        if (v2d_font == NULL) {
-            return 0;
-        }
-        return vita2d_pgf_text_height(v2d_font, font_scaling, msg);
-    } else {
-        return 20;
+    if (v2d_font == NULL) {
+        return 0;
     }
+    return vita2d_bmf_text_height(v2d_font, font_scaling, msg);
 }
 
 void v2d_draw_font_advanced(const Rect dst, const Color c,
                             bool centerX, bool centerY, const char *fmt, ...) {
 
-    if (v2d_gpu && v2d_font == NULL) {
+    if (v2d_font == NULL) {
         return;
     }
 
@@ -155,31 +137,19 @@ void v2d_draw_font_advanced(const Rect dst, const Color c,
 
     if (centerY) {
         rect.y = (dst.y + (dst.h / 2) - height / 2);
-        if (v2d_gpu) {
-            rect.y -= (int) (2 * font_scaling);
-        } else {
-            rect.y += (int) (3 * font_scaling);
-        }
     }
 
     if (centerX) {
         rect.x = dst.x + (dst.w / 2) - width / 2;
     }
 
-    if (v2d_gpu) {
-        vita2d_pgf_draw_text(v2d_font, rect.x, rect.y + height,
-                             (unsigned int) RGBA8(c.r, c.g, c.b, c.a), font_scaling, msg);
-    } else {
-        blit_set_color(RGBT(c.r, c.g, c.b, 255 - c.a), RGBT(0, 0, 0, 255));
-        blit_string(rect.x, rect.y, msg);
-        blit_set_color(RGBT(draw_color.r, draw_color.g, draw_color.b, 255 - draw_color.a),
-                       RGBT(0, 0, 0, 255));
-    }
+    vita2d_bmf_draw_text(v2d_font, rect.x, rect.y,
+                         (unsigned int) RGBA8(c.r, c.g, c.b, c.a), font_scaling, msg);
 }
 
 void v2d_draw_font_color(const Rect dst, const Color c, const char *fmt, ...) {
 
-    if (v2d_gpu && v2d_font == NULL) {
+    if (v2d_font == NULL) {
         return;
     }
 
@@ -195,7 +165,7 @@ void v2d_draw_font_color(const Rect dst, const Color c, const char *fmt, ...) {
 
 void v2d_draw_font(int x, int y, const char *fmt, ...) {
 
-    if (v2d_gpu && v2d_font == NULL) {
+    if (v2d_font == NULL) {
         return;
     }
 

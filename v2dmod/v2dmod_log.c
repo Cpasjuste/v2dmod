@@ -21,4 +21,5 @@ void log_write(const char *buffer) {
 
     kuIoWrite(fd, buffer, strlen(buffer));
     kuIoClose(fd);
+
 }

@@ -9,7 +9,7 @@ if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif ()
 endif ()
 
-project(v2d_gxm)
+project(v2d_vflux)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O3 -std=gnu99")
@@ -23,16 +23,17 @@ link_directories(
         ${CMAKE_BINARY_DIR}/v2dmod/libv2dmod
         ${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(v2d_gxm main.c)
-add_dependencies(v2d_gxm libv2dmod)
+add_executable(v2d_vflux main.c)
+add_dependencies(v2d_vflux v2dmod.suprx)
 
-target_link_libraries(v2d_gxm
+target_link_libraries(v2d_vflux
         taihen_stub
         v2dmod_stub
         SceLibKernel_stub
-        k gcc
+        k 
+	gcc
         )
 
-vita_create_self(v2d_gxm.suprx v2d_gxm
-        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/v2d_gxm.yml
+vita_create_self(v2d_vflux.suprx v2d_vflux
+        CONFIG ${CMAKE_CURRENT_SOURCE_DIR}/v2d_vflux.yml
         )

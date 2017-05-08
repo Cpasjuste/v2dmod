@@ -18,7 +18,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions -D_
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib")
 
 include_directories(
-        libvita2d/libvita2d/include
+        vita2d/include
 )
 
 link_directories(
@@ -29,32 +29,25 @@ if (NOT ${RELEASE})
     add_definitions(-DENABLE_LOGGING)
 endif ()
 
-file(GLOB SRC
-        libvita2d/libvita2d/shader/compiled/color_f_gxp.o
-        libvita2d/libvita2d/shader/compiled/color_v_gxp.o
-        libvita2d/libvita2d/shader/compiled/texture_f_gxp.o
-        libvita2d/libvita2d/shader/compiled/texture_v_gxp.o
-        libvita2d/libvita2d/shader/compiled/texture_tint_f_gxp.o
-        )
-
 add_executable(v2dmod
         main.c
         v2dmod.c
-        v2dmod_fb.c
-        v2dmod_fb_font.c
         v2dmod_drawing.c
+        v2dmod_bmf.c
         v2dmod_utility.c
         v2dmod_log.c
-        libvita2d/libvita2d/source/vita2d.c
-        libvita2d/libvita2d/source/vita2d_draw.c
-        libvita2d/libvita2d/source/vita2d_texture.c
-        libvita2d/libvita2d/source/vita2d_image_bmp.c
-        libvita2d/libvita2d/source/utils.c
-        libvita2d/libvita2d/source/int_htab.c
-        libvita2d/libvita2d/source/texture_atlas.c
-        libvita2d/libvita2d/source/bin_packing_2d.c
-        libvita2d/libvita2d/source/vita2d_pgf.c
-        ${SRC}
+        vita2d/source/vita2d.c
+        vita2d/source/vita2d_draw.c
+        vita2d/source/vita2d_texture.c
+        vita2d/source/vita2d_image_bmp.c
+        vita2d/source/vita2d_bmf.c
+        vita2d/source/vita2d_bmf_parser.c
+        vita2d/source/utils.c
+        vita2d/shader/compiled/color_f_gxp.o
+        vita2d/shader/compiled/color_v_gxp.o
+        vita2d/shader/compiled/texture_f_gxp.o
+        vita2d/shader/compiled/texture_v_gxp.o
+        vita2d/shader/compiled/texture_tint_f_gxp.o
         )
 
 target_link_libraries(v2dmod
@@ -64,9 +57,6 @@ target_link_libraries(v2dmod
         SceDisplay_stub
         SceSysmem_stub
         SceGxm_stub
-        ScePgf_stub
-        SceSysmodule_stub
-        ScePower_stub
         SceKernelThreadMgr_stub
         SceKernelModulemgr_stub
         SceAppMgr_stub

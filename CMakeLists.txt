@@ -14,3 +14,4 @@ add_subdirectory(v2dmod)
 
 # example modules
 add_subdirectory(examples/fps)
+add_subdirectory(examples/vflux)

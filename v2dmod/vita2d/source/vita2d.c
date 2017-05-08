@@ -36,7 +36,7 @@ extern const SceGxmProgram texture_tint_f_gxp_start;
 
 /* Static variables */
 
-static int pgf_module_was_loaded = 0;
+//static int pgf_module_was_loaded = 0;
 
 #ifdef USE_CLEAR_VERTEX
 static const SceGxmProgram *const clearVertexProgramGxp = &clear_v_gxp_start;
@@ -100,12 +100,12 @@ static SceUID poolUid;
 static unsigned int pool_index = 0;
 static unsigned int pool_size = 0;
 
-int vita2d_init(SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher)
+int vita2d_init(SceKernelMemBlockType memType, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher)
 {
-    return vita2d_init_advanced(DEFAULT_TEMP_POOL_SIZE, pCtx, pPatcher);
+    return vita2d_init_advanced(memType, DEFAULT_TEMP_POOL_SIZE, pCtx, pPatcher);
 }
 
-int vita2d_init_advanced(unsigned int temp_pool_size, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher)
+int vita2d_init_advanced(SceKernelMemBlockType memType, unsigned int temp_pool_size, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher)
 {
     int err;
 
@@ -367,18 +367,13 @@ int vita2d_init_advanced(unsigned int temp_pool_size, SceGxmContext *pCtx, SceGx
     // Allocate memory for the memory pool
     pool_size = temp_pool_size;
     pool_addr = gpu_alloc(
-            SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
+            memType,
             pool_size,
             sizeof(void *),
             SCE_GXM_MEMORY_ATTRIB_READ,
             &poolUid);
 
     matrix_init_orthographic(_vita2d_ortho_matrix, 0.0f, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0.0f, 0.0f, 1.0f);
-
-    pgf_module_was_loaded = sceSysmoduleIsLoaded(SCE_SYSMODULE_PGF);
-
-    if (pgf_module_was_loaded != SCE_SYSMODULE_LOADED)
-        sceSysmoduleLoadModule(SCE_SYSMODULE_PGF);
 
     vita2d_initialized = 1;
     return 1;
@@ -568,6 +563,10 @@ void *vita2d_pool_memalign(unsigned int size, unsigned int alignment) {
         void *addr = (void *) ((unsigned int) pool_addr + new_index);
         pool_index = new_index + size;
         return addr;
+    } else {
+        // crap !
+        vita2d_pool_reset();
+        return vita2d_pool_memalign(size, alignment);
     }
     return NULL;
 }

@@ -1,10 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <libk/stdio.h>
+#include <libk/string.h>
 #include <psp2/io/fcntl.h>
-#include <psp2/gxm.h>
-#include "utils.h"
+
 #include "vita2d.h"
+#include "utils.h"
 
 #define BMP_SIGNATURE (0x4D42)
 
@@ -32,11 +31,11 @@ typedef struct {
 
 
 static vita2d_texture *_vita2d_load_BMP_generic(
-	BITMAPFILEHEADER *bmp_fh,
-	BITMAPINFOHEADER *bmp_ih,
-	void *user_data,
-	void (*seek_fn)(void *user_data, unsigned int offset),
-	void (*read_fn)(void *user_data, void *buffer, unsigned int length))
+		BITMAPFILEHEADER *bmp_fh,
+		BITMAPINFOHEADER *bmp_ih,
+		void *user_data,
+		void (*seek_fn)(void *user_data, unsigned int offset),
+		void (*read_fn)(void *user_data, void *buffer, unsigned int length))
 {
 	unsigned int row_stride = bmp_ih->biWidth * (bmp_ih->biBitCount/8);
 	if (row_stride%4 != 0) {
@@ -48,8 +47,8 @@ static vita2d_texture *_vita2d_load_BMP_generic(
 		return NULL;
 
 	vita2d_texture *texture = vita2d_create_empty_texture(
-		bmp_ih->biWidth,
-		bmp_ih->biHeight);
+			bmp_ih->biWidth,
+			bmp_ih->biHeight);
 
 	if (!texture) {
 		sce_free(buffer);
@@ -72,15 +71,15 @@ static vita2d_texture *_vita2d_load_BMP_generic(
 
 		for (x = 0; x < bmp_ih->biWidth; x++) {
 
-			if (bmp_ih->biBitCount == 32) {		//ABGR8888
+			if (bmp_ih->biBitCount == 32) {		//BGRA8888
 				unsigned int color = *(unsigned int *)(buffer + x*4);
-				*tex_ptr = (color&0xFF)<<24 | ((color>>8)&0xFF)<<16 |
-					((color>>16)&0xFF)<<8 | (color>>24);
+				*tex_ptr = ((color>>24)&0xFF)<<24 | (color&0xFF)<<16 |
+						   ((color>>8)&0xFF)<<8 | (color>>16)&0xFF;
 
 			} else if (bmp_ih->biBitCount == 24) {	//BGR888
 				unsigned char *address = buffer + x*3;
 				*tex_ptr = (*address)<<16 | (*(address+1))<<8 |
-					(*(address+2)) | (0xFF<<24);
+						   (*(address+2)) | (0xFF<<24);
 
 			} else if (bmp_ih->biBitCount == 16) {	//BGR565
 				unsigned int color = *(unsigned short *)(buffer + x*2);
@@ -137,17 +136,17 @@ vita2d_texture *vita2d_load_BMP_file(const char *filename)
 	sceIoRead(fd, (void *)&bmp_ih, sizeof(BITMAPINFOHEADER));
 
 	vita2d_texture *texture = _vita2d_load_BMP_generic(&bmp_fh,
-		&bmp_ih,
-		(void *)&fd,
-		_vita2d_read_bmp_file_seek_fn,
-		_vita2d_read_bmp_file_read_fn);
+													   &bmp_ih,
+													   (void *)&fd,
+													   _vita2d_read_bmp_file_seek_fn,
+													   _vita2d_read_bmp_file_read_fn);
 
 	sceIoClose(fd);
 	return texture;
 
-exit_close:
+	exit_close:
 	sceIoClose(fd);
-exit_error:
+	exit_error:
 	return NULL;
 }
 
@@ -165,12 +164,12 @@ vita2d_texture *vita2d_load_BMP_buffer(const void *buffer)
 	unsigned int buffer_address = (unsigned int)buffer;
 
 	vita2d_texture *texture = _vita2d_load_BMP_generic(&bmp_fh,
-		&bmp_ih,
-		(void *)&buffer_address,
-		_vita2d_read_bmp_buffer_seek_fn,
-		_vita2d_read_bmp_buffer_read_fn);
+													   &bmp_ih,
+													   (void *)&buffer_address,
+													   _vita2d_read_bmp_buffer_seek_fn,
+													   _vita2d_read_bmp_buffer_read_fn);
 
 	return texture;
-exit_error:
+	exit_error:
 	return NULL;
 }

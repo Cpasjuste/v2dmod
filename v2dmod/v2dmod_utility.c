@@ -10,19 +10,20 @@
 #include "utils.h"
 #include "v2dmod_utility.h"
 
-FileList *v2d_get_file_list(const char *path) {
+void v2d_get_file_list(const char *path, FileList *fileList) {
+
+    if(fileList == NULL) {
+        return;
+    }
+
+    memset(fileList, 0, sizeof(FileList));
+    fileList->count = 0;
 
     SceUID dfd = sceIoDopen(path);
     if (dfd < 0)
-        return NULL;
+        return;
 
     int res = 0;
-
-    FileList *fileList = v2d_malloc(sizeof(FileList));
-    memset(fileList, 0, sizeof(FileList));
-
-    fileList->files = v2d_malloc(MAX_FILES * sizeof(File));
-    memset(fileList->files, 0, MAX_FILES * sizeof(File));
 
     do {
 
@@ -34,14 +35,12 @@ FileList *v2d_get_file_list(const char *path) {
 
             if (SCE_S_ISREG(dir.d_stat.st_mode)) {
                 if (fileList->count < MAX_FILES) {
-                    snprintf(fileList->files[fileList->count].path, MAX_PATH, "%s%s", path, dir.d_name);
+                    snprintf(fileList->file[fileList->count], MAX_PATH, "%s%s", path, dir.d_name);
                     fileList->count++;
                 }
             }
         }
     } while (res > 0);
-
-    return fileList;
 }
 
 void *v2d_malloc(size_t size) {
