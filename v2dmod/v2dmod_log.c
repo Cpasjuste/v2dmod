@@ -5,12 +5,13 @@
 #include <psp2/io/stat.h>
 #include <psp2/io/fcntl.h>
 #include <libk/string.h>
+#ifdef ENABLE_LOGGING
 #include <kuio.h>
-
+#endif
 #include "v2dmod_log.h"
 
 void log_write(const char *buffer) {
-
+#ifdef ENABLE_LOGGING
     kuIoMkdir(LOG_PATH);
 
     SceUID fd;
@@ -21,5 +22,5 @@ void log_write(const char *buffer) {
 
     kuIoWrite(fd, buffer, strlen(buffer));
     kuIoClose(fd);
-
+#endif
 }

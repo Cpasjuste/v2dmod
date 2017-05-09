@@ -4,9 +4,6 @@
 #include "vita2d.h"
 #include "utils.h"
 
-#define BMFONT_SUCCESS 0
-#define BMFONT_ERROR -1
-
 typedef struct {
     int x;
     int y;
@@ -32,14 +29,14 @@ typedef struct {
     int packed; // 1 if packed, 0 otherwise
 } BMFont;
 
+extern BMFont v2d_bmf;
+
 typedef struct vita2d_bmf {
 
     vita2d_texture *texture;
-    BMFont bmf;
+    BMFont *bmf;
 
 } vita2d_bmf;
-
-extern int BMFont_ParseText(const char *filename, BMFont *inf);
 
 vita2d_bmf *vita2d_load_bmf(const char *img_path, const char *fnt_paht) {
 
@@ -50,11 +47,7 @@ vita2d_bmf *vita2d_load_bmf(const char *img_path, const char *fnt_paht) {
         return NULL;
     }
 
-    if (BMFont_ParseText(fnt_paht, &font->bmf) != BMFONT_SUCCESS) {
-        printf("couldn't parse font: %s\n", fnt_paht);
-        sce_free(font);
-        return NULL;
-    }
+    font->bmf = &v2d_bmf;
 
     font->texture = vita2d_load_BMP_file(img_path);
     if (font->texture == NULL) {
@@ -96,36 +89,36 @@ int generic_bmf_draw_text(vita2d_bmf *font, int draw, int *height,
             if (pen_x > max_x)
                 max_x = pen_x;
             pen_x = start_x;
-            pen_y += font->bmf.size * scale;
+            pen_y += font->bmf->size * scale;
             continue;
         }
 
         if (c < 0 || c >= 95)
             continue;
 
-        srcx = font->bmf.chr[c].x;
-        srcy = font->bmf.chr[c].y;
-        srcw = font->bmf.chr[c].width;
-        srch = font->bmf.chr[c].height;
+        srcx = font->bmf->chr[c].x;
+        srcy = font->bmf->chr[c].y;
+        srcw = font->bmf->chr[c].width;
+        srch = font->bmf->chr[c].height;
 
         if (draw) {
             vita2d_draw_texture_tint_part_scale(tex,
-                                                pen_x + font->bmf.chr[c].xoffset * scale,
-                                                pen_y + font->bmf.chr[c].yoffset * scale,
+                                                pen_x + font->bmf->chr[c].xoffset * scale,
+                                                pen_y + font->bmf->chr[c].yoffset * scale,
                                                 srcx, srcy, srcw, srch,
                                                 scale,
                                                 scale,
                                                 color);
         }
 
-        pen_x += font->bmf.chr[c].xadvance * scale;
+        pen_x += font->bmf->chr[c].xadvance * scale;
     }
 
     if (pen_x > max_x)
         max_x = pen_x;
 
     if (height)
-        *height = (int) (pen_y + font->bmf.size * scale - y);
+        *height = (int) (pen_y + font->bmf->size * scale - y);
 
     return max_x - x;
 }

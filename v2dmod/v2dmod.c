@@ -20,12 +20,13 @@
 #define HOOK_GXM_CREATE_RENDER_TARGET   5
 #define HOOK_GXM_DESTROY_RENDER_TARGET  6
 #define HOOK_GXM_COLOR_SURFACE_INIT     7
-#define HOOK_CTRL_PEEK_1                8
-#define HOOK_CTRL_PEEK_2                9
-#define HOOK_CTRL_READ_1                10
-#define HOOK_CTRL_READ_2                11
+#define HOOK_GXM_DISPLAY_QUEUE          8
+#define HOOK_CTRL_PEEK_1                9
+#define HOOK_CTRL_PEEK_2                10
+#define HOOK_CTRL_READ_1                11
+#define HOOK_CTRL_READ_2                12
 
-#define HOOK_COUNT 12
+#define HOOK_COUNT 13
 
 static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0x7A410B64, _sceDisplaySetFrameBuf},
@@ -36,6 +37,7 @@ static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0x207AF96B, _sceGxmCreateRenderTarget},
         {-1, 0, 0xB94C50A,  _sceGxmDestroyRenderTarget},
         {-1, 0, 0xED0F6E25, _sceGxmColorSurfaceInit},
+        {-1, 0, 0xEC5C26B5, _sceGxmDisplayQueueAddEntry},
         {-1, 0, 0xA9C3CED6, _sceCtrlPeekBufferPositive},
         {-1, 0, 0x15F81E8C, _sceCtrlPeekBufferPositive2},
         {-1, 0, 0x67E7AB83, _sceCtrlReadBufferPositive},
@@ -90,10 +92,10 @@ static int _sceCtrlHooks(tai_hook_ref_t ref_hook, int port, SceCtrlData *ctrl, i
     int ret = TAI_CONTINUE(int, ref_hook, port, ctrl, count);
 
     if (inited && new_input_loop && ctrl != NULL && ctrlCb != NULL) {
+        new_input_loop = false;
         if (ctrlCb(port, ctrl, count)) {
             ctrl->buttons = 0;
         }
-        new_input_loop = false;
     }
 
     return ret;
@@ -120,8 +122,6 @@ int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
     if (inited && setFbCb != NULL) {
         setFbCb(pParam, sync);
     }
-
-    new_input_loop = true;
 
     return TAI_CONTINUE(int, hooks[HOOK_DISPLAY].ref, pParam, sync);
 }
@@ -212,7 +212,8 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
                //&& (gxmRenderTarget[gxmRenderTargetCurrent] == renderTarget)
                && (colorSurface != NULL)
                && (sceGxmTextureGetWidth(&colorSurface->backgroundTex) == 960);
-    //V2D_LOG("_sceGxmBeginScene: (target=%p, can_draw=%i\n", renderTarget, can_draw);
+
+    //V2D_LOG("bs: t=%p, d=%i\n", renderTarget, can_draw);
 
     return ret;
 }
@@ -226,8 +227,17 @@ int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNoti
     }
 
     int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_END_SCENE].ref, context, vertexNotification, fragmentNotification);
-
     vita2d_pool_reset();
+    return ret;
+}
+
+int _sceGxmDisplayQueueAddEntry(SceGxmSyncObject *oldBuffer, SceGxmSyncObject *newBuffer, const void *callbackData) {
+
+    int ret = TAI_CONTINUE(int, hooks[HOOK_GXM_DISPLAY_QUEUE].ref, oldBuffer, newBuffer, callbackData);
+
+    new_input_loop = true;
+    //vita2d_pool_reset();
+    //V2D_LOG("NL\n");
 
     return ret;
 }

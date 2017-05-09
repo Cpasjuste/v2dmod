@@ -47,59 +47,62 @@ static int v2d_get_module_info_by_name(const char *name, tai_module_info_t *modi
 extern int gxmRenderTargetCurrent;
 extern int gxmRenderTargetCount;
 
-V2DModule modules[MAX_MODULES];
-FileList fileList;
+static V2DModule *modules;
+static FileList *file_list;
+static bool drawing = false;
+static bool draw_menu = false;
+static int selection_index = 0;
+static uint32_t controls[2];
+//static int selection_page = 0;
 
-bool draw_menu = false;
-int selection_index = 0;
-int selection_page = 0;
-
-void menu_load_module() {
+void menu_load_module(int index) {
 
     if (draw_menu) {
 
         Rect rectWindow = {256, 128, SCREEN_WIDTH - 4 * 128, SCREEN_HEIGHT - 256};
         v2d_draw_rect_outline(rectWindow, COLOR_MENU, COLOR_MENU_BORDER, 3);
+        v2d_scale_rect(&rectWindow, -6);
 
-        int font_height = v2d_get_font_height("Hp") + 4;
+        int font_height = 25 + 2;
         int max_lines = rectWindow.h / font_height;
-        selection_page = selection_index / max_lines;
+        int page = index / max_lines;
 
-        Rect rectText = rectWindow;
-        rectText.x += 1;
-        rectText.w -= 2;
-        rectText.h = font_height;
+        rectWindow.h = font_height;
 
-        for (int i = selection_page * max_lines; i < selection_page * max_lines + max_lines; i++) {
+        for (int i = page * max_lines; i < page * max_lines + max_lines; i++) {
 
-            if (i >= fileList.count)
+            if (i >= file_list->count)
                 break;
 
-            Rect r = rectText;
-            r.x += 6;
-            r.w -= 6;
+            Rect r = rectWindow;
+            r.x += 4;
+            r.w -= 8;
 
             // set highlight
-            if (i == selection_index) {
-                v2d_draw_rect_outline(rectText, COLOR_SELECTION, COLOR_SELECTION_BORDER, 1);
-                v2d_draw_font_advanced(r, COLOR_SELECTION_BORDER, false, true, fileList.file[i]);
+            if (i == index) {
+                v2d_draw_rect_outline(rectWindow, COLOR_SELECTION, COLOR_SELECTION_BORDER, 1);
+                v2d_draw_font_advanced(r, COLOR_SELECTION_BORDER, false, true, file_list->file[i]);
             } else {
-                v2d_draw_font_advanced(r, COLOR_FONT, false, true, fileList.file[i]);
+                v2d_draw_font_advanced(r, COLOR_FONT, false, true, file_list->file[i]);
             }
 
-            rectText.y += font_height;
+            rectWindow.y += font_height;
         }
     }
 }
 
 void onDraw() {
 
-    v2d_set_draw_color(WHITE);
+    if (drawing) {
+        return;
+    }
 
-    v2d_draw_font(330, 8, "gxmRenderTarget: %i (%i)", gxmRenderTargetCurrent, gxmRenderTargetCount);
+    drawing = true;
+    v2d_set_draw_color(WHITE);
+    //v2d_draw_font(330, 8, "gxmRenderTarget: %i (%i)", gxmRenderTargetCurrent, gxmRenderTargetCount);
 
     if (draw_menu) {
-        menu_load_module();
+        menu_load_module(selection_index);
     } else {
         for (int i = 0; i < MAX_MODULES; i++) {
             if (modules[i].modinfo.modid > 0) {
@@ -110,9 +113,9 @@ void onDraw() {
             }
         }
     }
-}
 
-uint32_t last_ctrls, press_ctrls;
+    drawing = false;
+}
 
 int onControls(int port, SceCtrlData *ctrl, int count) {
 
@@ -123,20 +126,20 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
 
     if (draw_menu) {
 
-        press_ctrls = ctrl->buttons & ~last_ctrls;
+        controls[1] = ctrl->buttons & ~controls[0];
 
-        if (press_ctrls & SCE_CTRL_DOWN) {
+        if (controls[1] & SCE_CTRL_DOWN) {
             selection_index++;
-            if (selection_index >= fileList.count)
+            if (selection_index >= file_list->count)
                 selection_index = 0;
-        } else if (press_ctrls & SCE_CTRL_UP) {
+        } else if (controls[1] & SCE_CTRL_UP) {
             selection_index--;
             if (selection_index < 0)
-                selection_index = fileList.count - 1;
-        } else if (press_ctrls & SCE_CTRL_CROSS) {
-            V2DModule *module = get_module_by_path(fileList.file[selection_index]);
+                selection_index = file_list->count - 1;
+        } else if (controls[1] & SCE_CTRL_CROSS) {
+            V2DModule *module = get_module_by_path(file_list->file[selection_index]);
             if (module == NULL) {
-                start_module(fileList.file[selection_index]);
+                start_module(file_list->file[selection_index]);
             } else {
                 v2d_unregister(module);
             }
@@ -144,7 +147,8 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
             draw_menu = false;
         }
 
-        /* DEBUG */
+        /*
+        // DEBUG
         if ((ctrl->buttons & SCE_CTRL_RTRIGGER) && press_ctrls & SCE_CTRL_DOWN) {
             gxmRenderTargetCurrent++;
             if (gxmRenderTargetCurrent >= gxmRenderTargetCount)
@@ -154,9 +158,10 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
             if (gxmRenderTargetCurrent < 0)
                 gxmRenderTargetCurrent = gxmRenderTargetCount - 1;
         }
-        /* DEBUG */
+        // DEBUG
+        */
 
-        last_ctrls = ctrl->buttons;
+        controls[0] = ctrl->buttons;
         return 1;
     }
 
@@ -165,9 +170,11 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
 
 void onInit() {
 
-    memset(modules, 0, sizeof(modules));
+    modules = (V2DModule *) sce_malloc(MAX_MODULES * sizeof(V2DModule));
+    memset(modules, 0, MAX_MODULES * sizeof(V2DModule));
 
-    v2d_get_file_list("ux0:/tai/v2dmod/modules/", &fileList);
+    file_list = sce_malloc(sizeof(FileList));
+    v2d_get_file_list("ux0:/tai/v2dmod/modules/", file_list);
 }
 
 void onDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
@@ -271,7 +278,13 @@ int module_start(SceSize argc, const void *args) {
 int module_stop(SceSize argc, const void *args) {
 
     v2d_end();
-    v2d_free(modules);
+
+    if (modules != NULL) {
+        sce_free(modules);
+    }
+    if (file_list != NULL) {
+        sce_free(file_list);
+    }
 
     return SCE_KERNEL_STOP_SUCCESS;
 }

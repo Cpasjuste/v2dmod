@@ -37,6 +37,8 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
 int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNotification,
                     const SceGxmNotification *fragmentNotification);
 
+int _sceGxmDisplayQueueAddEntry(SceGxmSyncObject *oldBuffer, SceGxmSyncObject *newBuffer, const void *callbackData);
+
 int _sceGxmDestroyRenderTarget(SceGxmRenderTarget *renderTarget);
 
 #endif // V2DMOD_INTERNAL_H

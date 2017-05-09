@@ -25,7 +25,11 @@ link_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if (NOT ${RELEASE})
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(BUILD_DEBUG true CACHE BOOL "Debug build")
+endif ()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DENABLE_LOGGING)
 endif ()
 
@@ -41,7 +45,6 @@ add_executable(v2dmod
         vita2d/source/vita2d_texture.c
         vita2d/source/vita2d_image_bmp.c
         vita2d/source/vita2d_bmf.c
-        vita2d/source/vita2d_bmf_parser.c
         vita2d/source/utils.c
         vita2d/shader/compiled/color_f_gxp.o
         vita2d/shader/compiled/color_v_gxp.o
@@ -50,7 +53,7 @@ add_executable(v2dmod
         vita2d/shader/compiled/texture_tint_f_gxp.o
         )
 
-target_link_libraries(v2dmod
+set(LDFLAGS
         taihen_stub
         SceLibKernel_stub
         SceIofilemgr_stub
@@ -60,11 +63,14 @@ target_link_libraries(v2dmod
         SceKernelThreadMgr_stub
         SceKernelModulemgr_stub
         SceAppMgr_stub
-        kuio_stub
         k
         gcc
-        m
-        )
+        m)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    list(APPEND LDFLAGS kuio_stub)
+endif ()
+
+target_link_libraries(v2dmod ${LDFLAGS})
 
 vita_create_self(v2dmod.suprx v2dmod
         CONFIG ${CMAKE_SOURCE_DIR}/v2dmod/v2dmod.yml)
