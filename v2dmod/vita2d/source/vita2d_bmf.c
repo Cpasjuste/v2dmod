@@ -30,6 +30,7 @@ typedef struct {
 } BMFont;
 
 extern BMFont v2d_bmf;
+static vita2d_bmf v2d_font;
 
 typedef struct vita2d_bmf {
 
@@ -40,23 +41,24 @@ typedef struct vita2d_bmf {
 
 vita2d_bmf *vita2d_load_bmf(const char *img_path, const char *fnt_paht) {
 
+    /*
     vita2d_bmf *font = sce_malloc(sizeof(vita2d_bmf));
-
     if (font == NULL) {
         printf("couldn't allocate font\n");
         return NULL;
     }
+    */
 
-    font->bmf = &v2d_bmf;
+    v2d_font.bmf = &v2d_bmf;
 
-    font->texture = vita2d_load_BMP_file(img_path);
-    if (font->texture == NULL) {
+    v2d_font.texture = vita2d_load_BMP_file(img_path);
+    if (v2d_font.texture == NULL) {
         printf("couldn't load texture: %s\n", img_path);
-        sce_free(font);
+        //sce_free(font);
         return NULL;
     }
 
-    return font;
+    return &v2d_font;
 }
 
 void vita2d_free_bmf(vita2d_bmf *font) {
@@ -64,7 +66,7 @@ void vita2d_free_bmf(vita2d_bmf *font) {
         if (font->texture) {
             sce_free(font->texture);
         }
-        sce_free(font);
+        //sce_free(font);
     }
 }
 

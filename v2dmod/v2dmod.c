@@ -21,12 +21,15 @@
 #define HOOK_GXM_DESTROY_RENDER_TARGET  6
 #define HOOK_GXM_COLOR_SURFACE_INIT     7
 #define HOOK_GXM_DISPLAY_QUEUE          8
-#define HOOK_CTRL_PEEK_1                9
-#define HOOK_CTRL_PEEK_2                10
-#define HOOK_CTRL_READ_1                11
-#define HOOK_CTRL_READ_2                12
+#define HOOK_CTRL_PEEK_NEG              9
+#define HOOK_CTRL_PEEK_1                10
+#define HOOK_CTRL_PEEK_2                11
+#define HOOK_CTRL_READ_NEG              12
+#define HOOK_CTRL_READ_1                13
+#define HOOK_CTRL_READ_2                14
+#define HOOK_ALLOC                      15
 
-#define HOOK_COUNT 13
+#define HOOK_COUNT 16
 
 static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0x7A410B64, _sceDisplaySetFrameBuf},
@@ -38,10 +41,15 @@ static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0xB94C50A,  _sceGxmDestroyRenderTarget},
         {-1, 0, 0xED0F6E25, _sceGxmColorSurfaceInit},
         {-1, 0, 0xEC5C26B5, _sceGxmDisplayQueueAddEntry},
+        {-1, 0, 0x104ED1A7, _sceCtrlPeekBufferNegative},
+//        {-1, 0, 0x27A0C5FB, _sceCtrlPeekBufferNegative2},
         {-1, 0, 0xA9C3CED6, _sceCtrlPeekBufferPositive},
         {-1, 0, 0x15F81E8C, _sceCtrlPeekBufferPositive2},
+        {-1, 0, 0x15F96FB0, _sceCtrlReadBufferNegative},
+//        {-1, 0, 0x27A0C5FB, _sceCtrlReadBufferNegative2},
         {-1, 0, 0x67E7AB83, _sceCtrlReadBufferPositive},
-        {-1, 0, 0xC4226A3E, _sceCtrlReadBufferPositive2}
+        {-1, 0, 0xC4226A3E, _sceCtrlReadBufferPositive2},
+        {-1, 0, 0xB9D5EBDE, _sceKernelAllocMemBlock}
 };
 
 static initCallback initCb = NULL;
@@ -87,6 +95,35 @@ static void init() {
     }
 }
 
+static int allocated = 0;
+
+SceUID _sceKernelAllocMemBlock(
+        const char *name, SceKernelMemBlockType type,
+        int size, SceKernelAllocMemBlockOpt *optp) {
+
+    SceUID ret = TAI_CONTINUE(SceUID, hooks[HOOK_ALLOC].ref, name, type, size, optp);
+
+    if (ret >= 0) {
+
+        allocated += size;
+
+        if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
+            V2D_LOG("sceKernelAllocMemBlock(%s, %i, USER_RW)\n", name, size);
+        else if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE)
+            V2D_LOG("sceKernelAllocMemBlock(%s, %i, USER_RW_UNCACHE)\n", name, size);
+        else if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW)
+            V2D_LOG("sceKernelAllocMemBlock(%s, %i, USER_CDRAM_RW)\n", name, size);
+        else if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_RW)
+            V2D_LOG("sceKernelAllocMemBlock(%s, %i, SER_MAIN_PHYCONT_RW)\n", name, size);
+        else if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW)
+            V2D_LOG("sceKernelAllocMemBlock(%s, %i, USER_MAIN_PHYCONT_NC_RW\n", name, size);
+    } else {
+        V2D_LOG("sceKernelAllocMemBlock(%s, %i, FAILED)\n", name, size);
+    }
+
+    return ret;
+}
+
 static int _sceCtrlHooks(tai_hook_ref_t ref_hook, int port, SceCtrlData *ctrl, int count) {
 
     int ret = TAI_CONTINUE(int, ref_hook, port, ctrl, count);
@@ -101,20 +138,28 @@ static int _sceCtrlHooks(tai_hook_ref_t ref_hook, int port, SceCtrlData *ctrl, i
     return ret;
 }
 
-int _sceCtrlPeekBufferPositive(int port, SceCtrlData *ctrl, int count) {
-    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_1].ref, port, ctrl, count);
+int _sceCtrlPeekBufferNegative(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_NEG].ref, port, pad_data, count);
 }
 
-int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *ctrl, int count) {
-    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_2].ref, port, ctrl, count);
+int _sceCtrlPeekBufferPositive(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_1].ref, port, pad_data, count);
 }
 
-int _sceCtrlReadBufferPositive(int port, SceCtrlData *ctrl, int count) {
-    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_1].ref, port, ctrl, count);
+int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_2].ref, port, pad_data, count);
 }
 
-int _sceCtrlReadBufferPositive2(int port, SceCtrlData *ctrl, int count) {
-    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_2].ref, port, ctrl, count);
+int _sceCtrlReadBufferNegative(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_NEG].ref, port, pad_data, count);
+}
+
+int _sceCtrlReadBufferPositive(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_1].ref, port, pad_data, count);
+}
+
+int _sceCtrlReadBufferPositive2(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_2].ref, port, pad_data, count);
 }
 
 int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
@@ -242,15 +287,16 @@ int _sceGxmDisplayQueueAddEntry(SceGxmSyncObject *oldBuffer, SceGxmSyncObject *n
     return ret;
 }
 
-void v2d_start(void (*iCb)(),
-               void (*dCb)(),
-               void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
-               int (*cCb)(int port, SceCtrlData *ctrl, int count)) {
+int v2d_start(void (*iCb)(),
+              void (*dCb)(),
+              void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
+              int (*cCb)(int port, SceCtrlData *ctrl, int count)) {
 
     // Getting title info
     char id[16], title[256];
     sceAppMgrAppParamGetString(0, 9, title, 256);
     sceAppMgrAppParamGetString(0, 12, id, 256);
+
     V2D_LOG("====================\n");
     V2D_LOG(" %s: %s\n", id, title);
     V2D_LOG("====================\n");
@@ -267,6 +313,8 @@ void v2d_start(void (*iCb)(),
                                              hooks[i].nid,
                                              hooks[i].func);
     }
+
+    return 1;
 }
 
 void v2d_end() {

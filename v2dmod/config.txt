@@ -1,7 +1,6 @@
 # You must reboot for changes to take place.
 *KERNEL
 ux0:tai/kuio.skprx
-
 # henkaku.skprx is hard-coded to load and is not listed here
 *main
 # main is a special titleid for SceShell
@@ -10,12 +9,19 @@ ux0:app/MLCL00001/henkaku.suprx
 # this is for modifying the version string
 ux0:app/MLCL00001/henkaku.suprx
 
-# pix the cat
-#*PCSB00645
-#vs0:sys/external/libpgf.suprx
+*!NPXS10002
+# disable plugin for "PlayStation®Store"
+*!NPXS10063
+# disable plugin for "MsgMW"
+*!NPXS10032
+# disable plugin for "NearUtilBG"
+
+*ALL 
+ux0:tai/v2dmod.suprx
+
+#*PCSE00478 
 #ux0:tai/v2dmod.suprx
 
-*ALL
-vs0:sys/external/libpgf.suprx
-ux0:tai/v2dmod.suprx
+#*MLCL00001 
+#ux0:tai/v2dmod.suprx
 

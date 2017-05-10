@@ -52,14 +52,18 @@ vita2d_texture *vita2d_create_empty_texture(unsigned int w, unsigned int h)
 	return vita2d_create_empty_texture_format(w, h, SCE_GXM_TEXTURE_FORMAT_A8B8G8R8);
 }
 
+static vita2d_texture _tex;
 vita2d_texture *vita2d_create_empty_texture_format(unsigned int w, unsigned int h, SceGxmTextureFormat format)
 {
 	if (w > GXM_TEX_MAX_SIZE || h > GXM_TEX_MAX_SIZE)
 		return NULL;
 
+    /*
 	vita2d_texture *texture = sce_malloc(sizeof(*texture));
 	if (!texture)
 		return NULL;
+    */
+    vita2d_texture *texture = &_tex;
 
 	const int tex_size =  w * h * tex_format_to_bytespp(format);
 

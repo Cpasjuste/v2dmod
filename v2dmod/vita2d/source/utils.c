@@ -9,12 +9,8 @@ void *sce_malloc(size_t size) {
     SceUID m = sceKernelAllocMemBlock("vita2d", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, ALIGN(size, 4 * 1024), NULL);
     if (m >= 0) {
         sceKernelGetMemBlockBase(m, &ptr);
-    } /*else {
-        m = sceKernelAllocMemBlock("vita2d", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, ALIGN(size, 256*1024), NULL);
-        if (m >= 0) {
-            sceKernelGetMemBlockBase(m, &ptr);
-        }
-    }*/
+    }
+
     return ptr;
 }
 

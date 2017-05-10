@@ -5,13 +5,17 @@
 #ifndef V2DMOD_INTERNAL_H
 #define V2DMOD_INTERNAL_H
 
-int _sceCtrlPeekBufferPositive(int port, SceCtrlData *ctrl, int count);
+int _sceCtrlPeekBufferNegative(int port, SceCtrlData *pad_data, int count);
 
-int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *ctrl, int count);
+int _sceCtrlPeekBufferPositive(int port, SceCtrlData *pad_data, int count);
 
-int _sceCtrlReadBufferPositive(int port, SceCtrlData *ctrl, int count);
+int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *pad_data, int count);
 
-int _sceCtrlReadBufferPositive2(int port, SceCtrlData *ctrl, int count);
+int _sceCtrlReadBufferNegative(int port, SceCtrlData *pad_data, int count);
+
+int _sceCtrlReadBufferPositive(int port, SceCtrlData *pad_data, int count);
+
+int _sceCtrlReadBufferPositive2(int port, SceCtrlData *pad_data, int count);
 
 int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync);
 
@@ -40,5 +44,7 @@ int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNoti
 int _sceGxmDisplayQueueAddEntry(SceGxmSyncObject *oldBuffer, SceGxmSyncObject *newBuffer, const void *callbackData);
 
 int _sceGxmDestroyRenderTarget(SceGxmRenderTarget *renderTarget);
+
+SceUID _sceKernelAllocMemBlock(const char *name, SceKernelMemBlockType type, int size, SceKernelAllocMemBlockOpt *optp);
 
 #endif // V2DMOD_INTERNAL_H

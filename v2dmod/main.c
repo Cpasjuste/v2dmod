@@ -25,9 +25,9 @@ static Color COLOR_MENU_BORDER = {255, 255, 255, 200};
 static Color COLOR_SELECTION = {51, 153, 255, 200};
 static Color COLOR_SELECTION_BORDER = {102, 255, 102, 200};
 
-void v2d_start(void (*iCb)(), void (*dCb)(),
-               void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
-               int (*cCb)(int port, SceCtrlData *ctrl, int count));
+int v2d_start(void (*iCb)(), void (*dCb)(),
+              void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
+              int (*cCb)(int port, SceCtrlData *ctrl, int count));
 
 void v2d_end();
 
@@ -47,8 +47,8 @@ static int v2d_get_module_info_by_name(const char *name, tai_module_info_t *modi
 extern int gxmRenderTargetCurrent;
 extern int gxmRenderTargetCount;
 
-static V2DModule *modules;
-static FileList *file_list;
+static V2DModule modules[MAX_MODULES];
+static FileList file_list;
 static bool drawing = false;
 static bool draw_menu = false;
 static int selection_index = 0;
@@ -71,7 +71,7 @@ void menu_load_module(int index) {
 
         for (int i = page * max_lines; i < page * max_lines + max_lines; i++) {
 
-            if (i >= file_list->count)
+            if (i >= file_list.count)
                 break;
 
             Rect r = rectWindow;
@@ -81,9 +81,9 @@ void menu_load_module(int index) {
             // set highlight
             if (i == index) {
                 v2d_draw_rect_outline(rectWindow, COLOR_SELECTION, COLOR_SELECTION_BORDER, 1);
-                v2d_draw_font_advanced(r, COLOR_SELECTION_BORDER, false, true, file_list->file[i]);
+                v2d_draw_font_advanced(r, COLOR_SELECTION_BORDER, false, true, file_list.file[i]);
             } else {
-                v2d_draw_font_advanced(r, COLOR_FONT, false, true, file_list->file[i]);
+                v2d_draw_font_advanced(r, COLOR_FONT, false, true, file_list.file[i]);
             }
 
             rectWindow.y += font_height;
@@ -130,16 +130,16 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
 
         if (controls[1] & SCE_CTRL_DOWN) {
             selection_index++;
-            if (selection_index >= file_list->count)
+            if (selection_index >= file_list.count)
                 selection_index = 0;
         } else if (controls[1] & SCE_CTRL_UP) {
             selection_index--;
             if (selection_index < 0)
-                selection_index = file_list->count - 1;
+                selection_index = file_list.count - 1;
         } else if (controls[1] & SCE_CTRL_CROSS) {
-            V2DModule *module = get_module_by_path(file_list->file[selection_index]);
+            V2DModule *module = get_module_by_path(file_list.file[selection_index]);
             if (module == NULL) {
-                start_module(file_list->file[selection_index]);
+                start_module(file_list.file[selection_index]);
             } else {
                 v2d_unregister(module);
             }
@@ -170,11 +170,11 @@ int onControls(int port, SceCtrlData *ctrl, int count) {
 
 void onInit() {
 
-    modules = (V2DModule *) sce_malloc(MAX_MODULES * sizeof(V2DModule));
-    memset(modules, 0, MAX_MODULES * sizeof(V2DModule));
+    //modules = (V2DModule *) sce_malloc(MAX_MODULES * sizeof(V2DModule));
+    //memset(modules, 0, MAX_MODULES * sizeof(V2DModule));
+    //file_list = sce_malloc(sizeof(FileList));
 
-    file_list = sce_malloc(sizeof(FileList));
-    v2d_get_file_list("ux0:/tai/v2dmod/modules/", file_list);
+    v2d_get_file_list("ux0:/tai/v2dmod/modules/", &file_list);
 }
 
 void onDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
@@ -270,7 +270,9 @@ void _start() __attribute__ ((weak, alias ("module_start")));
 
 int module_start(SceSize argc, const void *args) {
 
-    v2d_start(onInit, onDraw, onDisplaySetFrameBuf, onControls);
+    if (!v2d_start(onInit, onDraw, onDisplaySetFrameBuf, onControls)) {
+        return SCE_KERNEL_START_FAILED;
+    }
 
     return SCE_KERNEL_START_SUCCESS;
 }
@@ -279,12 +281,14 @@ int module_stop(SceSize argc, const void *args) {
 
     v2d_end();
 
+    /*
     if (modules != NULL) {
         sce_free(modules);
     }
     if (file_list != NULL) {
         sce_free(file_list);
     }
+    */
 
     return SCE_KERNEL_STOP_SUCCESS;
 }

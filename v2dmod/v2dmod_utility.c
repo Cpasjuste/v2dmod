@@ -12,7 +12,7 @@
 
 void v2d_get_file_list(const char *path, FileList *fileList) {
 
-    if(fileList == NULL) {
+    if (fileList == NULL) {
         return;
     }
 
@@ -50,16 +50,13 @@ void *v2d_malloc(size_t size) {
     SceUID m = sceKernelAllocMemBlock("v2d", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, ALIGN(size, 4 * 1024), NULL);
     if (m >= 0) {
         sceKernelGetMemBlockBase(m, &ptr);
-    } else {
-        m = sceKernelAllocMemBlock("v2d", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, ALIGN(size, 256 * 1024), NULL);
-        if (m >= 0) {
-            sceKernelGetMemBlockBase(m, &ptr);
-        }
     }
+
     return ptr;
 }
 
 void v2d_free(void *p) {
+
     SceUID m = sceKernelFindMemBlockByAddr(p, 1);
     if (m >= 0) sceKernelFreeMemBlock(m);
 }
