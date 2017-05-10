@@ -15,9 +15,15 @@ ux0:app/MLCL00001/henkaku.suprx
 # disable plugin for "MsgMW"
 *!NPXS10032
 # disable plugin for "NearUtilBG"
+*!MLCL00001
+# disable plugin for "MolecularShell"
 
 *ALL 
 ux0:tai/v2dmod.suprx
+
+# NFS
+#*PCSB00183 
+#ux0:tai/v2dmod.suprx
 
 #*PCSE00478 
 #ux0:tai/v2dmod.suprx

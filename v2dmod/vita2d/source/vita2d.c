@@ -100,13 +100,12 @@ static SceUID poolUid;
 static unsigned int pool_index = 0;
 static unsigned int pool_size = 0;
 
-int vita2d_init(SceKernelMemBlockType memType, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher)
-{
+int vita2d_init(SceKernelMemBlockType memType, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher) {
     return vita2d_init_advanced(memType, DEFAULT_TEMP_POOL_SIZE, pCtx, pPatcher);
 }
 
-int vita2d_init_advanced(SceKernelMemBlockType memType, unsigned int temp_pool_size, SceGxmContext *pCtx, SceGxmShaderPatcher *pPatcher)
-{
+int vita2d_init_advanced(SceKernelMemBlockType memType, unsigned int temp_pool_size, SceGxmContext *pCtx,
+                         SceGxmShaderPatcher *pPatcher) {
     int err;
 
     UNUSED(err);
@@ -553,8 +552,11 @@ void *vita2d_pool_malloc(unsigned int size) {
         void *addr = (void *) ((unsigned int) pool_addr + pool_index);
         pool_index += size;
         return addr;
+    } else {
+        // crap !
+        vita2d_pool_reset();
+        return vita2d_pool_malloc(size);
     }
-    return NULL;
 }
 
 void *vita2d_pool_memalign(unsigned int size, unsigned int alignment) {
@@ -568,7 +570,6 @@ void *vita2d_pool_memalign(unsigned int size, unsigned int alignment) {
         vita2d_pool_reset();
         return vita2d_pool_memalign(size, alignment);
     }
-    return NULL;
 }
 
 unsigned int vita2d_pool_free_space() {

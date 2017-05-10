@@ -16,8 +16,14 @@
 #define start_module(x) sceKernelLoadStartModule(x, 0, NULL, 0, NULL, 0)
 #define stop_module(x) sceKernelStopUnloadModule(x, 0, NULL, 0, NULL, NULL)
 
-//static Color BLACK = {0, 0, 0, 255};
+static Color BLACK = {0, 0, 0, 255};
 static Color WHITE = {255, 255, 255, 255};
+static Color RED = {255, 0, 0, 255};
+static Color GREEN = {0, 255, 0, 255};
+static Color BLUE = {0, 0, 255, 255};
+
+static Color BLACK_A = {0, 0, 0, 255 / 2};
+static Color WHITE_A = {255, 255, 255, 255 / 2};
 
 static Color COLOR_FONT = {255, 255, 255, 200};
 static Color COLOR_MENU = {102, 178, 255, 200};
@@ -49,7 +55,6 @@ extern int gxmRenderTargetCount;
 
 static V2DModule modules[MAX_MODULES];
 static FileList file_list;
-static bool drawing = false;
 static bool draw_menu = false;
 static int selection_index = 0;
 static uint32_t controls[2];
@@ -93,13 +98,33 @@ void menu_load_module(int index) {
 
 void onDraw() {
 
-    if (drawing) {
-        return;
-    }
-
-    drawing = true;
     v2d_set_draw_color(WHITE);
+
+    /*
+    v2d_draw_font(330, 8, "HELLO WORLD");
     //v2d_draw_font(330, 8, "gxmRenderTarget: %i (%i)", gxmRenderTargetCurrent, gxmRenderTargetCount);
+
+    Rect r = {16, 16, 32, 32};
+    v2d_draw_rect_color(r, RED, true);
+
+    r.x += 64;
+    v2d_draw_rect_color(r, GREEN, true);
+
+    r.x += 64;
+    v2d_draw_rect_color(r, BLUE, true);
+
+    r.x += 64;
+    v2d_draw_rect_color(r, WHITE, true);
+
+    r.x += 64;
+    v2d_draw_rect_color(r, WHITE_A, true);
+
+    r.x += 64;
+    v2d_draw_rect_color(r, BLACK, true);
+
+    r.x += 64;
+    v2d_draw_rect_color(r, BLACK_A, true);
+    */
 
     if (draw_menu) {
         menu_load_module(selection_index);
@@ -113,8 +138,6 @@ void onDraw() {
             }
         }
     }
-
-    drawing = false;
 }
 
 int onControls(int port, SceCtrlData *ctrl, int count) {

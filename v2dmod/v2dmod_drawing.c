@@ -11,7 +11,7 @@
 
 #define MAX_PATH 512
 
-extern vita2d_bmf *v2d_font;
+extern vita2d_bmf v2d_font;
 static Color draw_color = {255, 255, 255, 255};
 static float font_scaling = 1;
 
@@ -94,25 +94,15 @@ void v2d_draw_rect_outline(const Rect rect, Color color, Color outline, int outl
 
 // fonts
 int v2d_get_font_width(const char *msg) {
-    if (v2d_font == NULL) {
-        return 0;
-    }
-    return vita2d_bmf_text_width(v2d_font, font_scaling, msg);
+    return vita2d_bmf_text_width(&v2d_font, font_scaling, msg);
 }
 
 int v2d_get_font_height(const char *msg) {
-    if (v2d_font == NULL) {
-        return 0;
-    }
-    return vita2d_bmf_text_height(v2d_font, font_scaling, msg);
+    return vita2d_bmf_text_height(&v2d_font, font_scaling, msg);
 }
 
 void v2d_draw_font_advanced(const Rect dst, const Color c,
                             bool centerX, bool centerY, const char *fmt, ...) {
-
-    if (v2d_font == NULL) {
-        return;
-    }
 
     char msg[MAX_PATH];
     memset(msg, 0, MAX_PATH);
@@ -143,15 +133,11 @@ void v2d_draw_font_advanced(const Rect dst, const Color c,
         rect.x = dst.x + (dst.w / 2) - width / 2;
     }
 
-    vita2d_bmf_draw_text(v2d_font, rect.x, rect.y,
+    vita2d_bmf_draw_text(&v2d_font, rect.x, rect.y,
                          (unsigned int) RGBA8(c.r, c.g, c.b, c.a), font_scaling, msg);
 }
 
 void v2d_draw_font_color(const Rect dst, const Color c, const char *fmt, ...) {
-
-    if (v2d_font == NULL) {
-        return;
-    }
 
     char msg[MAX_PATH];
     memset(msg, 0, MAX_PATH);
@@ -164,10 +150,6 @@ void v2d_draw_font_color(const Rect dst, const Color c, const char *fmt, ...) {
 }
 
 void v2d_draw_font(int x, int y, const char *fmt, ...) {
-
-    if (v2d_font == NULL) {
-        return;
-    }
 
     char msg[MAX_PATH];
     memset(msg, 0, MAX_PATH);

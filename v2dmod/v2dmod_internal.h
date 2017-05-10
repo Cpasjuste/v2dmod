@@ -23,6 +23,11 @@ int _sceGxmCreateContext(const SceGxmContextParams *params, SceGxmContext **cont
 
 int _sceGxmShaderPatcherCreate(const SceGxmShaderPatcherParams *params, SceGxmShaderPatcher **shaderPatcher);
 
+int _sceGxmShaderPatcherCreateVertexProgram(SceGxmShaderPatcher *shaderPatcher, SceGxmShaderPatcherId programId,
+                                            const SceGxmVertexAttribute *attributes, unsigned int attributeCount,
+                                            const SceGxmVertexStream *streams, unsigned int streamCount,
+                                            SceGxmVertexProgram **vertexProgram);
+
 int _sceGxmCreateRenderTarget(const SceGxmRenderTargetParams *params, SceGxmRenderTarget **renderTarget);
 
 int _sceGxmColorSurfaceInit(SceGxmColorSurface *surface, SceGxmColorFormat colorFormat,

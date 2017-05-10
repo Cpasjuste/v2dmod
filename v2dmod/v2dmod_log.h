@@ -10,7 +10,9 @@
 #define LOG_PATH "ux0:data/v2dmod/"
 #define LOG_FILE LOG_PATH "v2dmod.log"
 
+void log_open();
 void log_write(const char *buffer);
+void log_close();
 
 #define V2D_LOG(...) \
     do { \
