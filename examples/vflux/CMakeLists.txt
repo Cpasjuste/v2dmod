@@ -25,13 +25,14 @@ link_directories(
 
 add_executable(v2d_vflux main.c)
 add_dependencies(v2d_vflux v2dmod.suprx)
+add_dependencies(v2d_vflux libv2dmod)
 
 target_link_libraries(v2d_vflux
         taihen_stub
         v2dmod_stub
         SceLibKernel_stub
-        k 
-	gcc
+        k
+        gcc
         )
 
 vita_create_self(v2d_vflux.suprx v2d_vflux

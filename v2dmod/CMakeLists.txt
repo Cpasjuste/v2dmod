@@ -114,6 +114,7 @@ endmacro(_vita_create_stubs)
 
 _vita_create_stubs(libv2dmod v2dmod
         ${CMAKE_SOURCE_DIR}/v2dmod/v2dmod.yml)
+
 add_dependencies(libv2dmod v2dmod)
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/libv2dmod/
