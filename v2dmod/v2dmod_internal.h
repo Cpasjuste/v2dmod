@@ -45,6 +45,8 @@ int _sceGxmDisplayQueueAddEntry(SceGxmSyncObject *oldBuffer, SceGxmSyncObject *n
 
 int _sceGxmDestroyRenderTarget(SceGxmRenderTarget *renderTarget);
 
+void _sceGxmFinish(SceGxmContext *context);
+
 SceUID _sceKernelAllocMemBlock(const char *name, SceKernelMemBlockType type, int size, SceKernelAllocMemBlockOpt *optp);
 
 #endif // V2DMOD_INTERNAL_H
