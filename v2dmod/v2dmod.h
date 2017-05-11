@@ -34,13 +34,19 @@ typedef struct V2DModule {
     initCallback initCb;
     drawCallback drawCb;
     setFbCallback setFbCb;
-    bool loaded;
 } V2DModule;
 
 int v2d_register(V2DModule *module);
 
 int v2d_unregister(V2DModule *m);
 
+V2DModule *v2d_get_module(SceUID mid);
+
+SceUID v2d_get_module_id(const char *name);
+
 void v2d_draw_message(const char *fmt, ...);
+
+extern char v2d_game_name[256];
+extern char v2d_game_id[16];
 
 #endif //V2DMOD_H

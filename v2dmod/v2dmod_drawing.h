@@ -18,6 +18,8 @@
 #define COLOR_MENU_BORDER v2d_color(255, 255, 255, 200)
 #define COLOR_SELECTION v2d_color(51, 153, 255, 200)
 #define COLOR_SELECTION_BORDER v2d_color(102, 255, 102, 200)
+#define COLOR_OK v2d_color(102, 255, 102, 200)
+#define COLOR_NOK v2d_color(255, 51, 51, 200)
 
 typedef struct Point {
     int x;
@@ -70,6 +72,8 @@ void v2d_draw_rect_color(const Rect rect, const Color c, bool fill);
 void v2d_draw_rect_advanced(int x, int y, int w, int h, int r, int g, int b, int a, bool fill);
 
 void v2d_draw_rect_outline(const Rect rect, Color color, Color outline, int outlineSize);
+
+void v2d_draw_circle(const Rect rect, Color color);
 
 // font
 int v2d_get_font_width(const char *msg);

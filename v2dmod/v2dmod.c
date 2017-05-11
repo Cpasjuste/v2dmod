@@ -79,6 +79,9 @@ static bool can_draw = true;
 static bool new_input_loop = false;
 //static int scenes_count = 0;
 
+char v2d_game_name[256];
+char v2d_game_id[16];
+
 static void init() {
 
     if (inited) {
@@ -281,7 +284,7 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
 
     SceGxmTextureFormat fmt = colorSurface != NULL ?
                               sceGxmTextureGetFormat(&colorSurface->backgroundTex) :
-                              (SceGxmTextureFormat)0;
+                              (SceGxmTextureFormat) 0;
     int width = colorSurface != NULL ?
                 sceGxmTextureGetWidth(&colorSurface->backgroundTex) : 0;
     can_draw = context == gxmContext && width == 960
@@ -320,14 +323,12 @@ int v2d_start(void (*iCb)(),
               void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
               int (*cCb)(int port, SceCtrlData *ctrl, int count)) {
 
-    // Getting title info
-    char id[16], title[256];
-    sceAppMgrAppParamGetString(0, 9, title, 256);
-    sceAppMgrAppParamGetString(0, 12, id, 256);
+    sceAppMgrAppParamGetString(0, 9, v2d_game_name, 256);
+    sceAppMgrAppParamGetString(0, 12, v2d_game_id, 256);
 
     log_open();
     V2D_LOG("====================\n");
-    V2D_LOG(" %s: %s\n", id, title);
+    V2D_LOG(" %s: %s\n", v2d_game_id, v2d_game_name);
     V2D_LOG("====================\n");
 
     initCb = iCb;

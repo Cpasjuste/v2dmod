@@ -95,6 +95,11 @@ void v2d_draw_rect_outline(const Rect rect, Color color, Color outline, int outl
     v2d_draw_rect_color(r, color, true);
 }
 
+void v2d_draw_circle(const Rect rect, Color color) {
+    vita2d_draw_fill_circle(rect.x, rect.y, rect.w,
+                            (unsigned int) RGBA8(color.r, color.g, color.b, color.a));
+}
+
 // fonts
 int v2d_get_font_width(const char *msg) {
     return vita2d_bmf_text_width(&v2d_font, font_scaling, msg);

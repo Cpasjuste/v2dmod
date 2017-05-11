@@ -128,7 +128,7 @@ void vita2d_draw_rectangle(float x, float y, float w, float h, unsigned int colo
 
 void vita2d_draw_fill_circle(float x, float y, float radius, unsigned int color)
 {
-	static const int num_segments = 100;
+	static const int num_segments = 32;
 
 	vita2d_color_vertex *vertices = (vita2d_color_vertex *)vita2d_pool_memalign(
 		(num_segments + 1) * sizeof(vita2d_color_vertex),
