@@ -2,32 +2,7 @@
 #include <libk/stdio.h>
 #include <libk/stdarg.h>
 #include "vita2d.h"
-#include "utils.h"
-
-typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
-    int xoffset;
-    int yoffset;
-    int xadvance;
-} BMFont_Char;
-
-typedef struct {
-    int size;
-    int outline; // 1 for using outline, 0 otherwise
-    char pagefile[256]; // where the font image sheet is
-    BMFont_Char chr[95]; // there are 95 chars between ASCII 32 and 126
-    int charset; // one of BMFont_CharsetEnum
-    int unicode; // 1 for unicode characters, 0 otherwise
-    int pages; // num of pages the characters are spread across
-    int alphaChnl; // one of BMFont_ChnlHoldsEnum
-    int redChnl; // one of BMFont_ChnlHoldsEnum
-    int greenChnl; // one of BMFont_ChnlHoldsEnum
-    int blueChnl; // one of BMFont_ChnlHoldsEnum
-    int packed; // 1 if packed, 0 otherwise
-} BMFont;
+#include "../../v2dmod_bmf.h"
 
 typedef struct vita2d_bmf {
 
@@ -36,18 +11,23 @@ typedef struct vita2d_bmf {
 
 } vita2d_bmf;
 
-extern BMFont v2d_bmf;
+extern BMFont bmf_font;
 vita2d_bmf v2d_font;
 
 int vita2d_load_bmf(const char *img_path) {
 
-    v2d_font.bmf = &v2d_bmf;
+    v2d_font.bmf = &bmf_font;
 
     v2d_font.texture = vita2d_load_BMP_file(img_path);
     if (v2d_font.texture == NULL) {
         printf("couldn't load texture: %s\n", img_path);
         return -1;
     }
+
+    vita2d_texture_set_filters(
+            v2d_font.texture,
+            SCE_GXM_TEXTURE_FILTER_POINT,
+            SCE_GXM_TEXTURE_FILTER_POINT);
 
     return 0;
 }
@@ -86,22 +66,22 @@ int generic_bmf_draw_text(vita2d_bmf *font, int draw, int *height,
         if (c < 0 || c >= 95)
             continue;
 
-        srcx = font->bmf->chr[c].x;
-        srcy = font->bmf->chr[c].y;
-        srcw = font->bmf->chr[c].width;
-        srch = font->bmf->chr[c].height;
+        srcx = font->bmf->chars[c].x;
+        srcy = font->bmf->chars[c].y;
+        srcw = font->bmf->chars[c].width;
+        srch = font->bmf->chars[c].height;
 
         if (draw) {
             vita2d_draw_texture_tint_part_scale(tex,
-                                                pen_x + font->bmf->chr[c].xoffset * scale,
-                                                pen_y + font->bmf->chr[c].yoffset * scale,
+                                                pen_x + font->bmf->chars[c].xoffset * scale,
+                                                pen_y + font->bmf->chars[c].yoffset * scale,
                                                 srcx, srcy, srcw, srch,
                                                 scale,
                                                 scale,
                                                 color);
         }
 
-        pen_x += font->bmf->chr[c].xadvance * scale;
+        pen_x += font->bmf->chars[c].xadvance * scale;
     }
 
     if (pen_x > max_x)
