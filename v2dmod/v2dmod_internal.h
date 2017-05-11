@@ -24,15 +24,27 @@ int v2d_unregister(V2DModule *m);
 
 int _sceCtrlPeekBufferNegative(int port, SceCtrlData *pad_data, int count);
 
+int _sceCtrlPeekBufferNegative2(int port, SceCtrlData *pad_data, int count);
+
 int _sceCtrlPeekBufferPositive(int port, SceCtrlData *pad_data, int count);
 
 int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *pad_data, int count);
 
+int _sceCtrlPeekBufferPositiveExt(int port, SceCtrlData *pad_data, int count);
+
+int _sceCtrlPeekBufferPositiveExt2(int port, SceCtrlData *pad_data, int count);
+
 int _sceCtrlReadBufferNegative(int port, SceCtrlData *pad_data, int count);
+
+int _sceCtrlReadBufferNegative2(int port, SceCtrlData *pad_data, int count);
 
 int _sceCtrlReadBufferPositive(int port, SceCtrlData *pad_data, int count);
 
 int _sceCtrlReadBufferPositive2(int port, SceCtrlData *pad_data, int count);
+
+int _sceCtrlReadBufferPositiveExt(int port, SceCtrlData *pad_data, int count);
+
+int _sceCtrlReadBufferPositiveExt2(int port, SceCtrlData *pad_data, int count);
 
 int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync);
 

@@ -239,7 +239,7 @@ void onDraw() {
 
 int onControls(int port, SceCtrlData *ctrl, int count) {
 
-    if ((ctrl->buttons & SCE_CTRL_SELECT) && (ctrl->buttons & SCE_CTRL_START)) {
+    if ((ctrl->buttons & SCE_CTRL_SELECT) && (ctrl->buttons & SCE_CTRL_LTRIGGER)) {
         draw_menu = true;
         return 1;
     }

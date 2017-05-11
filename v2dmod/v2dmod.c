@@ -24,14 +24,20 @@
 #define HOOK_GXM_DISPLAY_QUEUE          9
 #define HOOK_GXM_FINISH                 10
 #define HOOK_CTRL_PEEK_NEG              11
-#define HOOK_CTRL_PEEK_1                12
-#define HOOK_CTRL_PEEK_2                13
-#define HOOK_CTRL_READ_NEG              14
-#define HOOK_CTRL_READ_1                15
-#define HOOK_CTRL_READ_2                16
-#define HOOK_ALLOC                      17
+#define HOOK_CTRL_PEEK_NEG2             12
+#define HOOK_CTRL_PEEK_1                13
+#define HOOK_CTRL_PEEK_2                14
+#define HOOK_CTRL_PEEK_EXT_1            15
+#define HOOK_CTRL_PEEK_EXT_2            16
+#define HOOK_CTRL_READ_NEG              17
+#define HOOK_CTRL_READ_NEG2             18
+#define HOOK_CTRL_READ_1                19
+#define HOOK_CTRL_READ_2                20
+#define HOOK_CTRL_READ_EXT_1            21
+#define HOOK_CTRL_READ_EXT_2            22
+#define HOOK_ALLOC                      23
 
-#define HOOK_COUNT 18
+#define HOOK_COUNT 24
 
 static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0x7A410B64, _sceDisplaySetFrameBuf},
@@ -46,13 +52,17 @@ static Hook hooks[HOOK_COUNT] = {
         {-1, 0, 0xEC5C26B5, _sceGxmDisplayQueueAddEntry},
         {-1, 0, 0x733D8AE,  _sceGxmFinish},
         {-1, 0, 0x104ED1A7, _sceCtrlPeekBufferNegative},
-//      {-1, 0, 0x27A0C5FB, _sceCtrlPeekBufferNegative2},
+        {-1, 0, 0x81A89660, _sceCtrlPeekBufferNegative2},
         {-1, 0, 0xA9C3CED6, _sceCtrlPeekBufferPositive},
         {-1, 0, 0x15F81E8C, _sceCtrlPeekBufferPositive2},
+        {-1, 0, 0xA59454D3, _sceCtrlPeekBufferPositiveExt},
+        {-1, 0, 0x860BF292, _sceCtrlPeekBufferPositiveExt2},
         {-1, 0, 0x15F96FB0, _sceCtrlReadBufferNegative},
-//      {-1, 0, 0x27A0C5FB, _sceCtrlReadBufferNegative2},
+        {-1, 0, 0x27A0C5FB, _sceCtrlReadBufferNegative2},
         {-1, 0, 0x67E7AB83, _sceCtrlReadBufferPositive},
         {-1, 0, 0xC4226A3E, _sceCtrlReadBufferPositive2},
+        {-1, 0, 0xE2D99296, _sceCtrlReadBufferPositiveExt},
+        {-1, 0, 0xA7178860, _sceCtrlReadBufferPositiveExt2},
         {-1, 0, 0xB9D5EBDE, _sceKernelAllocMemBlock}
 };
 
@@ -76,7 +86,6 @@ static SceGxmRenderTarget *gxmRenderTarget[MAX_TARGET];
 
 static bool inited = false;
 static bool can_draw = true;
-static bool new_input_loop = false;
 //static int scenes_count = 0;
 
 char v2d_game_name[256];
@@ -130,10 +139,10 @@ static int _sceCtrlHooks(tai_hook_ref_t ref_hook, int port, SceCtrlData *ctrl, i
 
     int ret = TAI_CONTINUE(int, ref_hook, port, ctrl, count);
 
-    if (inited && new_input_loop && ctrl != NULL && ctrlCb != NULL) {
-        new_input_loop = false;
+    if (inited && ctrlCb != NULL) {
         if (ctrlCb(port, ctrl, count)) {
-            ctrl->buttons = 0;
+            memset(ctrl, 0, sizeof(SceCtrlData));
+            return -1;
         }
     }
 
@@ -144,6 +153,10 @@ int _sceCtrlPeekBufferNegative(int port, SceCtrlData *pad_data, int count) {
     return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_NEG].ref, port, pad_data, count);
 }
 
+int _sceCtrlPeekBufferNegative2(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_NEG2].ref, port, pad_data, count);
+}
+
 int _sceCtrlPeekBufferPositive(int port, SceCtrlData *pad_data, int count) {
     return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_1].ref, port, pad_data, count);
 }
@@ -152,8 +165,20 @@ int _sceCtrlPeekBufferPositive2(int port, SceCtrlData *pad_data, int count) {
     return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_2].ref, port, pad_data, count);
 }
 
+int _sceCtrlPeekBufferPositiveExt(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_EXT_1].ref, port, pad_data, count);
+}
+
+int _sceCtrlPeekBufferPositiveExt2(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_PEEK_EXT_2].ref, port, pad_data, count);
+}
+
 int _sceCtrlReadBufferNegative(int port, SceCtrlData *pad_data, int count) {
     return _sceCtrlHooks(hooks[HOOK_CTRL_READ_NEG].ref, port, pad_data, count);
+}
+
+int _sceCtrlReadBufferNegative2(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_NEG2].ref, port, pad_data, count);
 }
 
 int _sceCtrlReadBufferPositive(int port, SceCtrlData *pad_data, int count) {
@@ -164,13 +189,19 @@ int _sceCtrlReadBufferPositive2(int port, SceCtrlData *pad_data, int count) {
     return _sceCtrlHooks(hooks[HOOK_CTRL_READ_2].ref, port, pad_data, count);
 }
 
+int _sceCtrlReadBufferPositiveExt(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_EXT_1].ref, port, pad_data, count);
+}
+
+int _sceCtrlReadBufferPositiveExt2(int port, SceCtrlData *pad_data, int count) {
+    return _sceCtrlHooks(hooks[HOOK_CTRL_READ_EXT_2].ref, port, pad_data, count);
+}
+
 int _sceDisplaySetFrameBuf(const SceDisplayFrameBuf *pParam, int sync) {
 
     if (inited && setFbCb != NULL) {
         setFbCb(pParam, sync);
     }
-
-    new_input_loop = true;
 
     return TAI_CONTINUE(int, hooks[HOOK_DISPLAY].ref, pParam, sync);
 }
