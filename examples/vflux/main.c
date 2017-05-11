@@ -22,10 +22,10 @@ void _start() __attribute__ ((weak, alias ("module_start")));
 int module_start(SceSize argc, const void *args) {
 
     memset(&module, 0, sizeof(module));
-    strcpy(module.name, "v2d_vflux");
+    strncpy(module.name, "v2d_vflux", 27);
+    strncpy(module.desc, "Screen filter", 64);
     module.drawCb = onDraw;
 
-    // important,
     if (!v2d_register(&module)) {
         return SCE_KERNEL_START_FAILED;
     }

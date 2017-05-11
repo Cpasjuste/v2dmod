@@ -2,15 +2,10 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/display.h>
 #include <libk/string.h>
-#include <libk/stdio.h>
 
 #include "v2dmod.h"
 
 V2DModule module;
-
-static Color COLOR_FONT = {255, 255, 255, 200};
-static Color COLOR_MENU = {102, 178, 255, 200};
-static Color COLOR_MENU_BORDER = {255, 255, 255, 200};
 
 uint64_t tick = 0;
 int frames = 0;
@@ -46,11 +41,11 @@ void _start() __attribute__ ((weak, alias ("module_start")));
 int module_start(SceSize argc, const void *args) {
 
     memset(&module, 0, sizeof(module));
-    strcpy(module.name, "v2d_fps");
+    strncpy(module.name, "v2d_fps", 27);
+    strncpy(module.desc, "Frames per second counter", 64);
     module.drawCb = onDraw;
     module.setFbCb = onDisplaySetFrameBuf;
 
-    // important,
     if (!v2d_register(&module)) {
         return SCE_KERNEL_START_FAILED;
     }

@@ -5,6 +5,23 @@
 #ifndef V2DMOD_INTERNAL_H
 #define V2DMOD_INTERNAL_H
 
+#include <psp2/kernel/sysmem.h>
+#include <psp2/gxm.h>
+
+int v2d_get_module_count();
+
+V2DModule *v2d_get_module_by_path(const char *path);
+
+int v2d_start(void (*iCb)(), void (*dCb)(),
+              void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
+              int (*cCb)(int port, SceCtrlData *ctrl, int count));
+
+void v2d_end();
+
+int v2d_register(V2DModule *m);
+
+int v2d_unregister(V2DModule *m);
+
 int _sceCtrlPeekBufferNegative(int port, SceCtrlData *pad_data, int count);
 
 int _sceCtrlPeekBufferPositive(int port, SceCtrlData *pad_data, int count);

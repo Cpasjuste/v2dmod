@@ -9,6 +9,7 @@
 #include <psp2/ctrl.h>
 #include <taihen.h>
 #include "v2dmod_drawing.h"
+#include "v2dmod_utility.h"
 
 typedef void (*initCallback)(void);
 
@@ -27,19 +28,19 @@ typedef struct Hook {
 
 typedef struct V2DModule {
     char name[27];
-    char path[256];
-    tai_module_info_t modinfo;
+    char desc[64];
+    char path[MAX_PATH];
+    SceUID modid;
     initCallback initCb;
     drawCallback drawCb;
     setFbCallback setFbCb;
+    bool loaded;
 } V2DModule;
-
-extern bool v2d_gpu;
 
 int v2d_register(V2DModule *module);
 
 int v2d_unregister(V2DModule *m);
 
-int v2d_get_module_info(tai_module_info_t *modinfo);
+void v2d_draw_message(const char *fmt, ...);
 
 #endif //V2DMOD_H

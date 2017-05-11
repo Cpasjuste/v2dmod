@@ -10,13 +10,13 @@
 #include "utils.h"
 #include "v2dmod_utility.h"
 
-void v2d_get_file_list(const char *path, FileList *fileList) {
+void v2d_get_file_list(const char *path, ItemList *fileList) {
 
     if (fileList == NULL) {
         return;
     }
 
-    memset(fileList, 0, sizeof(FileList));
+    memset(fileList, 0, sizeof(ItemList));
     fileList->count = 0;
 
     SceUID dfd = sceIoDopen(path);
@@ -34,8 +34,8 @@ void v2d_get_file_list(const char *path, FileList *fileList) {
         if (res > 0) {
 
             if (SCE_S_ISREG(dir.d_stat.st_mode)) {
-                if (fileList->count < MAX_FILES) {
-                    snprintf(fileList->file[fileList->count], MAX_PATH, "%s%s", path, dir.d_name);
+                if (fileList->count < MAX_ITEMS) {
+                    strncpy(fileList->name[fileList->count], dir.d_name, MAX_PATH);
                     fileList->count++;
                 }
             }

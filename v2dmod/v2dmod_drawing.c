@@ -7,13 +7,16 @@
 #include <libk/stdarg.h>
 
 #include "vita2d.h"
-#include "v2dmod_drawing.h"
-
-#define MAX_PATH 512
+#include "v2dmod_utility.h"
 
 extern vita2d_bmf v2d_font;
 static Color draw_color = {255, 255, 255, 255};
 static float font_scaling = 1;
+
+Color v2d_color(int r, int g, int b, int a) {
+    Color c = {r, g, b, a};
+    return c;
+}
 
 void v2d_set_draw_color(Color color) {
     draw_color = color;
@@ -133,7 +136,7 @@ void v2d_draw_font_advanced(const Rect dst, const Color c,
         rect.x = dst.x + (dst.w / 2) - width / 2;
     }
 
-    vita2d_bmf_draw_text(&v2d_font, rect.x, rect.y,
+    vita2d_bmf_draw_text(&v2d_font, rect.x, rect.y - 1,
                          (unsigned int) RGBA8(c.r, c.g, c.b, c.a), font_scaling, msg);
 }
 
