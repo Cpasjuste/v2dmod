@@ -12,6 +12,8 @@ endif()
 project(v2dmod)
 add_subdirectory(v2dmod)
 
+add_subdirectory(kuio)
+
 # example modules
 add_subdirectory(examples/fps)
 add_subdirectory(examples/vflux)

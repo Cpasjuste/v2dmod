@@ -1,6 +1,6 @@
 # You must reboot for changes to take place.
 *KERNEL
-ux0:tai/kuio.skprx
+ux0:data/v2dmod/kuio.skprx
 # henkaku.skprx is hard-coded to load and is not listed here
 *main
 # main is a special titleid for SceShell
@@ -8,9 +8,12 @@ ux0:app/MLCL00001/henkaku.suprx
 *NPXS10015
 # this is for modifying the version string
 ux0:app/MLCL00001/henkaku.suprx
+*NPXS10016
+# this is for modifying the version string in settings widget
+ux0:app/MLCL00001/henkaku.suprx
 
 *!NPXS10002
-# disable plugin for "PlayStation®Store"
+# disable plugin for "PlayStationStore"
 *!NPXS10063
 # disable plugin for "MsgMW"
 *!NPXS10032
@@ -18,16 +21,16 @@ ux0:app/MLCL00001/henkaku.suprx
 *!MLCL00001
 # disable plugin for "MolecularShell"
 
-*ALL 
-ux0:tai/v2dmod.suprx
+#*ALL
+#ux0:data/v2dmod/v2dmod.suprx
 
 # NFS
 #*PCSB00183 
-#ux0:tai/v2dmod.suprx
+#ux0:data/v2dmod/v2dmod.suprx
 
 #*PCSE00478 
-#ux0:tai/v2dmod.suprx
+#ux0:data/v2dmod/v2dmod.suprx
 
 #*MLCL00001 
-#ux0:tai/v2dmod.suprx
+#ux0:data/v2dmod/v2dmod.suprx
 

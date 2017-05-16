@@ -13,6 +13,7 @@ v2dmod:
           - v2d_register
           - v2d_unregister
           - v2d_color
+          - v2d_rect
           - v2d_set_draw_color
           - v2d_get_draw_color
           - v2d_scale_rect
@@ -29,4 +30,4 @@ v2dmod:
           - v2d_draw_font
           - v2d_draw_font_color
           - v2d_draw_font_advanced
-          - v2d_draw_message
+          #- v2d_draw_message

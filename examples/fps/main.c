@@ -5,7 +5,7 @@
 
 #include "v2dmod.h"
 
-V2DModule module;
+V2DModule *module;
 
 uint64_t tick = 0;
 int frames = 0;
@@ -40,22 +40,21 @@ void _start() __attribute__ ((weak, alias ("module_start")));
 
 int module_start(SceSize argc, const void *args) {
 
-    memset(&module, 0, sizeof(module));
-    strncpy(module.name, "v2d_fps", 27);
-    strncpy(module.desc, "Frames per second counter", 64);
-    module.drawCb = onDraw;
-    module.setFbCb = onDisplaySetFrameBuf;
-
-    if (!v2d_register(&module)) {
+    module = v2d_register("v2d_fps"); // must be real module name
+    if (module == NULL) {
         return SCE_KERNEL_START_FAILED;
     }
+
+    strncpy(module->desc, "Frames per second counter", 64);
+    module->drawCb = onDraw;
+    module->setFbCb = onDisplaySetFrameBuf;
 
     return SCE_KERNEL_START_SUCCESS;
 }
 
 int module_stop(SceSize argc, const void *args) {
 
-    v2d_unregister(&module);
+    v2d_unregister(module);
 
     return SCE_KERNEL_STOP_SUCCESS;
 }

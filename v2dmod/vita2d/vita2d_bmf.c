@@ -1,40 +1,55 @@
 #include <libk/stdlib.h>
 #include <libk/stdio.h>
 #include <libk/stdarg.h>
+#include <libk/string.h>
 #include "vita2d.h"
-#include "../../v2dmod_bmf.h"
+#include "../data/impact-23-outline.fnt.h"
+/*
+extern void kpool_reset();
+extern size_t kpool_available();
+extern void *kpool_alloc(size_t size);
+extern void *kpool_memalign(unsigned int size, unsigned int alignment);
+*/
+extern void vita2d_free_texture_(vita2d_texture *texture);
+extern BMFont bmf_font;
 
 typedef struct vita2d_bmf {
-
     vita2d_texture *texture;
     BMFont *bmf;
-
 } vita2d_bmf;
 
-extern BMFont bmf_font;
-vita2d_bmf v2d_font;
+vita2d_bmf font;
 
-int vita2d_load_bmf(const char *img_path) {
+vita2d_bmf *vita2d_load_bmf(const char *img_path) {
 
-    v2d_font.bmf = &bmf_font;
+    /*
+    vita2d_bmf *font = kpool_alloc(sizeof(vita2d_bmf));
+    if (!font) {
+        return NULL;
+    }
+    */
 
-    v2d_font.texture = vita2d_load_BMP_file(img_path);
-    if (v2d_font.texture == NULL) {
-        printf("couldn't load texture: %s\n", img_path);
-        return -1;
+    memset(&font, 0, sizeof(vita2d_bmf));
+    font.bmf = &bmf_font;
+
+    font.texture = vita2d_load_BMP_file(img_path);
+    if (!font.texture) {
+        return NULL;
     }
 
     vita2d_texture_set_filters(
-            v2d_font.texture,
-            SCE_GXM_TEXTURE_FILTER_POINT,
-            SCE_GXM_TEXTURE_FILTER_POINT);
+            font.texture,
+            SCE_GXM_TEXTURE_FILTER_LINEAR,
+            SCE_GXM_TEXTURE_FILTER_LINEAR);
 
-    return 0;
+    return &font;
 }
 
-void vita2d_free_bmf() {
-    if (v2d_font.texture != NULL) {
-        vita2d_free_texture(v2d_font.texture);
+void vita2d_free_bmf(vita2d_bmf *font) {
+    if (font != NULL) {
+        if (font->texture != NULL) {
+            vita2d_free_texture_(font->texture);
+        }
     }
 }
 
@@ -59,7 +74,7 @@ int generic_bmf_draw_text(vita2d_bmf *font, int draw, int *height,
             if (pen_x > max_x)
                 max_x = pen_x;
             pen_x = start_x;
-            pen_y += font->bmf->size * scale;
+            pen_y += (font->bmf->size + font->bmf->outline * 2) * scale;
             continue;
         }
 
@@ -81,14 +96,14 @@ int generic_bmf_draw_text(vita2d_bmf *font, int draw, int *height,
                                                 color);
         }
 
-        pen_x += font->bmf->chars[c].xadvance * scale;
+        pen_x += (font->bmf->chars[c].xadvance + font->bmf->outline * 2) * scale;
     }
 
     if (pen_x > max_x)
         max_x = pen_x;
 
     if (height)
-        *height = (int) (pen_y + font->bmf->size * scale - y);
+        *height = (int) (pen_y + font->bmf->size * scale - y) + font->bmf->outline * 2;
 
     return max_x - x;
 }

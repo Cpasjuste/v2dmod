@@ -8,6 +8,8 @@
 #include "v2dmod_drawing.h"
 
 #define MAX_MODULES 20
+#define MAX_OPTIONS 10
+#define MAX_VALUES 10
 #define MAX_ITEMS 64
 #define MAX_PATH 256
 #define DISPLAY_WIDTH 960

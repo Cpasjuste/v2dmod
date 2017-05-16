@@ -156,8 +156,8 @@ void vita2d_pvf_text_dimensions(vita2d_pvf *font, float scale, const char *text,
 int vita2d_pvf_text_width(vita2d_pvf *font, float scale, const char *text);
 int vita2d_pvf_text_height(vita2d_pvf *font, float scale, const char *text);
 
-int vita2d_load_bmf(const char *img_path);
-void vita2d_free_bmf();
+vita2d_bmf *vita2d_load_bmf(const char *img_path);
+void vita2d_free_bmf(vita2d_bmf *font);
 int vita2d_bmf_draw_text(vita2d_bmf *font, int x, int y, unsigned int color, float scale, const char *text);
 int vita2d_bmf_draw_textf(vita2d_bmf *font, int x, int y, unsigned int color, float scale, const char *text, ...);
 void vita2d_bmf_text_dimensions(vita2d_bmf *font, float scale, const char *text, int *width, int *height);

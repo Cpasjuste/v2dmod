@@ -83,13 +83,18 @@ static SceGxmRenderTarget *gxmRenderTarget[MAX_TARGET];
 //static SceGxmColorSurface *gxmColorSurface = NULL;
 //static int gxmScenesPerFrame = 0;
 //static int gxmSceneCurrent = 0;
+//static int scenes_count = 0;
 
 static bool inited = false;
 static bool can_draw = true;
-//static int scenes_count = 0;
 
 char v2d_game_name[256];
 char v2d_game_id[16];
+
+vita2d_bmf *v2d_font;
+
+V2DModule *modules;
+int modules_count = 0;
 
 static void init() {
 
@@ -101,7 +106,7 @@ static void init() {
         inited = 1;
         vita2d_init_advanced(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW, 128 * 1024, gxmContext, gxmShaderPatcher);
         vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
-        vita2d_load_bmf("ux0:/tai/v2dmod/data/impact-25.bmp");
+        v2d_font = vita2d_load_bmf("ux0:/data/v2dmod/data/impact-23-outline.bmp");
         initCb();
     }
 }
@@ -321,7 +326,7 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
     can_draw = context == gxmContext && width == 960
                && fmt == SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR;
 
-    V2D_LOG("bs: t=%p, d=%i, f=0x%08X\n", renderTarget, can_draw, fmt);
+    //V2D_LOG("bs: t=%p, d=%i, f=0x%08X\n", renderTarget, can_draw, fmt);
 
     return ret;
 }
@@ -329,7 +334,7 @@ int _sceGxmBeginScene(SceGxmContext *context, unsigned int flags,
 int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNotification,
                     const SceGxmNotification *fragmentNotification) {
 
-    V2D_LOG("es: d=%i\n", can_draw);
+    //V2D_LOG("es: d=%i\n", can_draw);
     if (inited && can_draw) {
         drawCb();
     }
@@ -340,7 +345,7 @@ int _sceGxmEndScene(SceGxmContext *context, const SceGxmNotification *vertexNoti
 void _sceGxmFinish(SceGxmContext *context) {
 
     TAI_CONTINUE(void, hooks[HOOK_GXM_FINISH].ref, context);
-    V2D_LOG("f\n");
+    //V2D_LOG("f\n");
     vita2d_pool_reset();
 }
 
@@ -354,6 +359,7 @@ int v2d_start(void (*iCb)(),
               void (*sCb)(const SceDisplayFrameBuf *pParam, int sync),
               int (*cCb)(int port, SceCtrlData *ctrl, int count)) {
 
+    // get game id/name
     sceAppMgrAppParamGetString(0, 9, v2d_game_name, 256);
     sceAppMgrAppParamGetString(0, 12, v2d_game_id, 256);
 
@@ -362,11 +368,7 @@ int v2d_start(void (*iCb)(),
     V2D_LOG(" %s: %s\n", v2d_game_id, v2d_game_name);
     V2D_LOG("====================\n");
 
-    initCb = iCb;
-    drawCb = dCb;
-    setFbCb = sCb;
-    ctrlCb = cCb;
-
+    // set hooks
     for (int i = 0; i < HOOK_COUNT; i++) {
         hooks[i].uid = taiHookFunctionImport(&hooks[i].ref,
                                              TAI_MAIN_MODULE,
@@ -374,6 +376,12 @@ int v2d_start(void (*iCb)(),
                                              hooks[i].nid,
                                              hooks[i].func);
     }
+
+    // set callbacks
+    initCb = iCb;
+    drawCb = dCb;
+    setFbCb = sCb;
+    ctrlCb = cCb;
 
     return 1;
 }
@@ -387,7 +395,81 @@ void v2d_end() {
     }
 
     vita2d_fini();
-    vita2d_free_bmf();
+    vita2d_free_bmf(v2d_font);
 
     log_close();
+}
+
+V2DModule *v2d_register(const char *name) {
+
+    V2DModule *module = v2d_get_module_by_name(name);
+    if (module) {
+        module->modid = v2d_get_module_id(name);
+        if (module->modid >= 0) {
+            return module;
+        }
+    }
+
+    return NULL;
+}
+
+int v2d_unregister(V2DModule *m) {
+
+    if (m != NULL) {
+        V2DModule *module = v2d_get_module(m->modid);
+        if (module != NULL) {
+            module->modid = -1;
+            module->setFbCb = NULL;
+            module->drawCb = NULL;
+            return 1;
+        }
+    }
+
+    return -1;
+}
+
+int v2d_get_module_count() {
+    return modules_count;
+}
+
+V2DModule *v2d_get_module(SceUID mid) {
+
+    for (int i = 0; i < modules_count; i++) {
+        if (modules[i].modid == mid) {
+            return &modules[i];
+        }
+    }
+
+    return NULL;
+}
+
+V2DModule *v2d_get_module_by_name(const char *name) {
+
+    for (int i = 0; i < modules_count; i++) {
+        if (strcmp(modules[i].name, name) == 0) {
+            return &modules[i];
+        }
+    }
+
+    return NULL;
+}
+
+V2DModule *v2d_get_module_by_path(const char *path) {
+
+    for (int i = 0; i < modules_count; i++) {
+        if (strcmp(modules[i].path, path) == 0) {
+            return &modules[i];
+        }
+    }
+
+    return NULL;
+}
+
+SceUID v2d_get_module_id(const char *name) {
+    tai_module_info_t mi;
+    mi.size = sizeof(tai_module_info_t);
+    if (taiGetModuleInfo(name, &mi) == 0) {
+        return mi.modid;
+    }
+    return -1;
 }

@@ -18,11 +18,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti -fno-exceptions -D_
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib")
 
 include_directories(
-        vita2d/include
+        vita2d
+        ${CMAKE_SOURCE_DIR}/kuio/include
 )
 
 link_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_BINARY_DIR}/kuio/kuio_stubs
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -37,21 +39,26 @@ add_executable(v2dmod
         main.c
         v2dmod.c
         v2dmod_drawing.c
-        v2dmod_bmf.c
         v2dmod_utility.c
         v2dmod_log.c
-        vita2d/source/vita2d.c
-        vita2d/source/vita2d_draw.c
-        vita2d/source/vita2d_texture.c
-        vita2d/source/vita2d_image_bmp.c
-        vita2d/source/vita2d_bmf.c
-        vita2d/source/utils.c
+        v2dmod_config.c
+        v2dmod_kpool.c
+        menu/menu_main.c
+        menu/menu_module_option.c
+        menu/menu_drawing_helper.c
+        data/impact-23-outline.fnt.c
+        vita2d/vita2d.c
+        vita2d/vita2d_draw.c
+        vita2d/vita2d_texture.c
+        vita2d/vita2d_image_bmp.c
+        vita2d/vita2d_bmf.c
+        vita2d/utils.c
         vita2d/shader/compiled/color_f_gxp.o
         vita2d/shader/compiled/color_v_gxp.o
         vita2d/shader/compiled/texture_f_gxp.o
         vita2d/shader/compiled/texture_v_gxp.o
         vita2d/shader/compiled/texture_tint_f_gxp.o
-        )
+        menu/menu_module_list.c menu/menu_module_list.h)
 
 set(LDFLAGS
         taihen_stub
@@ -63,12 +70,10 @@ set(LDFLAGS
         SceKernelThreadMgr_stub
         SceKernelModulemgr_stub
         SceAppMgr_stub
+        kuio_stub
         k
         gcc
         m)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    list(APPEND LDFLAGS kuio_stub)
-endif ()
 
 target_link_libraries(v2dmod ${LDFLAGS})
 

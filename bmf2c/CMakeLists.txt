@@ -3,6 +3,6 @@ project(bmf2c)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cpp BMFont.cpp BMFont.h)
+set(SOURCE_FILES main.cpp)
 add_executable(bmf2c ${SOURCE_FILES})
 

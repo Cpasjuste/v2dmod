@@ -10,5 +10,6 @@ typedef struct {
 
 typedef struct {
 	int size;
+	int outline;
 	BMChar chars[95];
 } BMFont;

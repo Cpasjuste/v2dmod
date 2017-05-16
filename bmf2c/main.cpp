@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
     while (std::getline(file, line)) {
         if (line.compare(0, 4, "info") == 0) {
             bmf->size = getInt(line, "size");
+            bmf->outline = getInt(line, "outline");
         } else if (line.compare(0, 11, "chars count") == 0) {
             bmf->chars_count = getInt(line, "chars count");
         } else if (line.compare(0, 7, "char id") == 0) {
@@ -59,6 +60,7 @@ int main(int argc, char *argv[]) {
 
     hfile << "typedef struct {\n";
     hfile << "\tint size;\n";
+    hfile << "\tint outline;\n";
     hfile << "\tBMChar chars[" << bmf->chars_count << "];\n";
     hfile << "} BMFont;\n";
     hfile.close();
@@ -66,7 +68,7 @@ int main(int argc, char *argv[]) {
     std::ofstream cfile;
     cfile.open(fnt_path + ".c");
     cfile << "#include \"" << fnt_path << ".h\"\n\n";
-    cfile << "BMFont bmf_font = { " << bmf->size << ",\n";
+    cfile << "BMFont bmf_font = { " << bmf->size << ", " << bmf->outline << ",\n";
     cfile << "\t\t\t{ \n";
     for (int i = 0; i < bmf->chars.size(); i++) {
         cfile << "\t\t\t\t{ ";

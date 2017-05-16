@@ -45,6 +45,8 @@ typedef struct Color {
     int a;
 } Color;
 
+Rect v2d_rect(int x, int y, int w, int h);
+
 Color v2d_color(int r, int g, int b, int a);
 
 void v2d_set_draw_color(Color color);

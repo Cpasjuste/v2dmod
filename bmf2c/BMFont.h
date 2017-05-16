@@ -24,6 +24,7 @@ public:
     };
 
     int size;
+    int outline;
     int chars_count;
     std::vector<BMChar> chars;  // there are 95 chars between ASCII 32 and 126
 };
